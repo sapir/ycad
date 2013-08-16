@@ -1,0 +1,6 @@
+func x() {
+    show cube(s=10mm)
+}
+
+show x()
+show x()
