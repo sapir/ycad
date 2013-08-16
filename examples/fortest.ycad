@@ -1,0 +1,3 @@
+for x in [5mm, 10mm, 12mm] {
+    show cube(s=x)
+}
