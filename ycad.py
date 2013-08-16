@@ -43,7 +43,7 @@ boolLiteral.setParseAction(lambda s,loc,toks: eval(toks[0].title()))
 stringLiteral = QuotedString(quoteChar='"', escChar='\\', escQuote='\\"')
 
 literal << (numberWithUnit | number | vectorLiteral | boolLiteral | stringLiteral)
-literal.setParseAction(lambda s,loc, toks: LiteralExpr(toks[0]))
+literal.setParseAction(lambda s,loc,toks: LiteralExpr(toks[0]))
 
 
 varName = Word(alphas + "_", alphanums + "_")
