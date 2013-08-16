@@ -98,7 +98,8 @@ def _makeSimpleStmt(keyword, stmtCls):
     return stmt
 
 showStmt = _makeSimpleStmt('show', ShowStmt)
-simpleStmt = showStmt
+returnStmt = _makeSimpleStmt('return', ReturnStmt)
+simpleStmt = showStmt | returnStmt
 
 ifStmt = (Keyword("if").suppress() + expr + block
     + ZeroOrMore(Keyword("else").suppress() + Keyword("if").suppress() + expr + block)

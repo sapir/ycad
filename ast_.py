@@ -106,6 +106,10 @@ class IfStmt(Stmt):
                 for stmt in self.elseBlock:
                     stmt.exec_(ctx)
 
+class ReturnException(BaseException):
+    def __init__(self, value=None):
+        self.value = value
+
 class FuncDefStmt(Stmt):
     def __init__(self, funcName, paramsList, block):
         self.funcName = funcName
@@ -119,7 +123,21 @@ class FuncDefStmt(Stmt):
     def exec_(self, ctx):
         # TODO: params
         def func(ctx):
-            for stmt in self.block:
-                stmt.exec_(ctx)
+            try:
+                for stmt in self.block:
+                    stmt.exec_(ctx)
+
+            except ReturnException as e:
+                return e.value
 
         ctx.setVar(self.funcName, func)
+
+class ReturnStmt(Stmt):
+    def __init__(self, expr):
+        self.expr = expr
+
+    def __repr__(self):
+        return 'return {0}'.format(self.expr)
+
+    def exec_(self, ctx):
+        raise ReturnException(self.expr.eval(ctx))
