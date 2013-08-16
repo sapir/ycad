@@ -18,17 +18,27 @@ class LiteralExpr(Expr):
     def eval(self, ctx):
         return self.value
 
+class VarNameExpr(Expr):
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return self.name
+
+    def eval(self, ctx):
+        return ctx.getVar(self.name)
+
 class FuncCallExpr(Expr):
     def __init__(self, funcName, params):
-        self.funcName = funcName
+        self.funcName = funcName.name
         self.params = params
 
     def __repr__(self):
         return '{0.funcName}({0.params})'.format(self)
 
     def eval(self, ctx):
-        kwargs = dict((name, val.eval(ctx))
-            for (name, val) in self.params)
+        kwargs = dict((nameExpr.name, val.eval(ctx))
+            for (nameExpr, val) in self.params)
 
         return ctx.getVar(self.funcName)(ctx, **kwargs)
 
@@ -57,10 +67,10 @@ class AssignStmt(Stmt):
         return '{0.lvalue} = {0.rvalue}'.format(self)
 
     def exec_(self, ctx):
-        if not isinstance(self.lvalue, basestring):
+        if not isinstance(self.lvalue, VarNameExpr):
             raise NotImplementedError
 
-        ctx.setVar(self.lvalue, self.rvalue.eval(ctx))
+        ctx.setVar(self.lvalue.name, self.rvalue.eval(ctx))
 
 class ShowStmt(Stmt):
     def __init__(self, value):
@@ -112,7 +122,7 @@ class ReturnException(BaseException):
 
 class FuncDefStmt(Stmt):
     def __init__(self, funcName, paramsList, block):
-        self.funcName = funcName
+        self.funcName = funcName.name
         self.paramsList = paramsList
         self.block = block
 
@@ -141,3 +151,21 @@ class ReturnStmt(Stmt):
 
     def exec_(self, ctx):
         raise ReturnException(self.expr.eval(ctx))
+
+class ForStmt(Stmt):
+    def __init__(self, lvalue, iterableExpr, block):
+        self.lvalue = lvalue.name
+        self.iterableExpr = iterableExpr
+        self.block = block
+
+    def __repr__(self):
+        return 'for {0} in {1} {2}'.format(
+            self.lvalue, self.iterableExpr, _blockRepr(self.block))
+
+    def exec_(self, ctx):
+        iterable = self.iterableExpr.eval(ctx)
+        for i in iterable:
+            ctx.setVar(self.lvalue, i.eval(ctx))
+
+            for stmt in self.block:
+                stmt.exec_(ctx)

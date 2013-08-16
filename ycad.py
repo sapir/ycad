@@ -46,10 +46,10 @@ literal << (numberWithUnit | number | vectorLiteral | boolLiteral | stringLitera
 literal.setParseAction(lambda s,loc,toks: LiteralExpr(toks[0]))
 
 
-varName = Word(alphas + "_", alphanums + "_")
-
-
 expr = Forward()
+
+varName = Word(alphas + "_", alphanums + "_")
+varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
 
 # TODO: allow named params but only after positional params
 param = varName + Literal("=").suppress() + expr
@@ -111,7 +111,10 @@ def ifStmtAction(s, loc, toks):
     return IfStmt(condsAndBlocks, elseBlock)
 ifStmt.setParseAction(ifStmtAction)
 
-forStmt = Keyword("for") + varName + Keyword("in") + expr + block
+forStmt = (Keyword("for").suppress() + varName
+    + Keyword("in").suppress() + expr
+    + block)
+forStmt.setParseAction(lambda s,loc,toks: ForStmt(toks[0], toks[1], toks[2]))
 
 part = Keyword("part") + stringLiteral + block
 
