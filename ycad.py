@@ -80,7 +80,7 @@ stmt = Forward()
 assignment = varName + Suppress("=") + expr
 assignment.setParseAction(lambda s,loc,toks: AssignStmt(toks[0], toks[1]))
 
-block = surround("{}", ZeroOrMore(stmt))
+block = Group(surround("{}", ZeroOrMore(stmt)))
 
 # TODO: allow named params but only after positional params
 paramDef = varName + Optional(Literal("=").suppress() + literal)
@@ -97,9 +97,15 @@ def _makeSimpleStmt(keyword, stmtCls):
 showStmt = _makeSimpleStmt('show', ShowStmt)
 simpleStmt = showStmt
 
-ifStmt = (Keyword("if") + expr + block
-    + ZeroOrMore(Keyword("else") + Keyword("if") + expr + block)
-    + Optional(Keyword("else") + block))
+ifStmt = (Keyword("if").suppress() + expr + block
+    + ZeroOrMore(Keyword("else").suppress() + Keyword("if").suppress() + expr + block)
+    + Optional(Keyword("else").suppress() + block))
+
+def ifStmtAction(s, loc, toks):
+    elseBlock = toks.pop() if len(toks) % 2 == 1 else None
+    condsAndBlocks = zip(*([iter(toks)] * 2))
+    return IfStmt(condsAndBlocks, elseBlock)
+ifStmt.setParseAction(ifStmtAction)
 
 forStmt = Keyword("for") + varName + Keyword("in") + expr + block
 

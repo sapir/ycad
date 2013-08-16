@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
-from pprint import *
+from __future__ import print_function
+from io import StringIO
+
 
 class Expr:
     def eval(self, ctx):
@@ -66,4 +68,36 @@ class ShowStmt(Stmt):
 
     def exec_(self, ctx):
         val = self.value.eval(ctx)
-        print val
+        print(val)
+
+class IfStmt(Stmt):
+    def __init__(self, condsAndBlocks, elseBlock=None):
+        self.condsAndBlocks = condsAndBlocks
+        self.elseBlock = elseBlock
+
+    def __repr__(self):
+        output = StringIO()
+
+        print('if {0} { {1} }'.format(*self.condsAndBlocks[0]), file=output)
+
+        for cond, block in self.condsAndBlocks[1:]:
+            print('else if {0} { {1} }'.format(cond, block), file=output)
+
+        if self.elseBlock is not None:
+            print('else {0}'.format(self.elseBlock), file=output)
+
+        return output.getvalue()
+
+    def exec_(self, ctx):
+        for cond, block in self.condsAndBlocks:
+            condVal = cond.eval(ctx)
+            if condVal:
+                for stmt in block:
+                    stmt.exec_(ctx)
+
+                break
+
+        else:
+            if self.elseBlock is not None:
+                for stmt in self.elseBlock:
+                    stmt.exec_(ctx)

@@ -1,0 +1,11 @@
+if "blah" {
+    show cube(s=10mm)
+} else {
+    show cube(s=15mm)
+}
+
+if "" {
+    show cube(s=20mm)
+} else {
+    show cube(s=5mm)
+}
