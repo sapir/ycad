@@ -1,0 +1,23 @@
+func weird(x, y, z=[10mm, 5cm, 10mm])
+{
+    if y {
+        show union {
+            c = cube(side=5mm)
+            c2 = scale(2) cylinder(r=5mm, h=3mm)
+        }
+    }
+
+    for x in [1,2,3,4,y] {
+    }
+
+    return 5
+}
+
+
+part "front" {
+    show weird(x=5, y=5)
+}
+
+part "back" {
+    show weird(x=10, y=5)
+}
