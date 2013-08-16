@@ -1,3 +1,4 @@
+# no comparisons yet, so use true/false constants
 if true {
     show cube(s=10mm)
 } else {
