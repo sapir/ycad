@@ -85,10 +85,12 @@ block = Group(surround("{}", ZeroOrMore(stmt)))
 
 # TODO: allow named params but only after positional params
 paramDef = varName + Optional(Literal("=").suppress() + literal)
-funcDef = (Keyword("func") + varName
-    + surround("()",
-        Group(Optional(delimitedList(Group(paramDef)))))
+funcDef = (Keyword("func").suppress() + varName
+    + Group(surround("()",
+        Group(Optional(delimitedList(Group(paramDef))))))
     + block)
+funcDef.setParseAction(lambda s,loc,toks: FuncDefStmt(toks[0], toks[1], toks[2]))
+
 
 def _makeSimpleStmt(keyword, stmtCls):
     stmt = Keyword(keyword).suppress() + expr

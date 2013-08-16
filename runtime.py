@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-def cube(s):
+def cube(ctx, s):
     assert isinstance(s, float)
     return 'cube(size={0});'.format(s)
 
