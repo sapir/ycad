@@ -1,12 +1,12 @@
 # no comparisons yet, so use true/false constants
 if true {
-    show cube(s=10mm)
+    show cube(s=1mm)
 } else {
-    show cube(s=15mm)
+    show cube(s=10cm)
 }
 
 if false {
-    show cube(s=20mm)
+    show cube(s=10cm)
 } else {
-    show cube(s=5mm)
+    show cube(s=2mm)
 }
