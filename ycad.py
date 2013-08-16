@@ -38,6 +38,7 @@ numberWithUnit.setParseAction(lambda s,loc,toks: [ toks[0]*toks[1] ])
 vectorLiteral = Group(surround("[]", delimitedList(literal)))
 
 boolLiteral = oneOfKeywords('true false')
+boolLiteral.setParseAction(lambda s,loc,toks: eval(toks[0].title()))
 
 stringLiteral = QuotedString(quoteChar='"', escChar='\\', escQuote='\\"')
 

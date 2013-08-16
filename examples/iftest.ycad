@@ -1,10 +1,10 @@
-if "blah" {
+if true {
     show cube(s=10mm)
 } else {
     show cube(s=15mm)
 }
 
-if "" {
+if false {
     show cube(s=20mm)
 } else {
     show cube(s=5mm)
