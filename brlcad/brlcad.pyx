@@ -41,6 +41,14 @@ cdef class WDB:
         
         _check_res(res)
 
+    def mk_rcc(self, bytes name, base, height, radius):
+        res = c_brlcad.mk_rcc(self.ptr, name,
+            <c_brlcad.point_t> _as_vec(base).data,
+            <c_brlcad.vect_t> _as_vec(height).data,
+            radius)
+
+        _check_res(res)
+
     cpdef close(self):
         c_brlcad.wdb_close(self.ptr)
 
