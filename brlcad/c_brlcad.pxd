@@ -5,6 +5,7 @@ cdef extern from "vmath.h":
     ctypedef double fastf_t     # actually from bu.h, but vmath.h includes it
     ctypedef fastf_t point_t[3]
     ctypedef fastf_t vect_t[3]
+    ctypedef fastf_t mat_t[4*4]
 
 cdef extern from "raytrace.h":
     struct rt_wdb:
