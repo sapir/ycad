@@ -1,1 +1,2 @@
 show cube(s=5mm)
+show cylinder(h=6mm, d1=7mm, d2=2mm)
