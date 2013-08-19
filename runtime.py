@@ -42,24 +42,26 @@ class Cube(BrlCadObject):
         self.s = s
         ctx.wdb.mk_rpp(self._name, [0,0,0], [s,s,s])
 
-
-def cylinder(ctx, h, d, d1=None, d2=None):
-    assert isinstance(h, float)
-    assert d is None or isinstance(d, float)
-    assert d1 is None or isinstance(d1, float)
-    assert d2 is None or isinstance(d2, float)
-    assert (d is not None) ^ (d1 is not None and d2 is not None)
-    
-    if d is not None:
-        return 'cylinder(h={0}, r={1});'.format(h, d/2.)
-    elif d1 is not None and d2 is not None:
-        return 'cylinder(h={0}, r1={1}, r2={2});'.format(h, d1/2., d2/2.)
+class Cylinder(BrlCadObject):
+    def __init__(self, ctx, h, d=None, d1=None, d2=None):
+        BrlCadObject.__init__(self)
+        
+        assert isinstance(h, float)
+        assert d is None or isinstance(d, float)
+        assert d1 is None or isinstance(d1, float)
+        assert d2 is None or isinstance(d2, float)
+        assert (d is not None) ^ (d1 is not None and d2 is not None)
+        
+        if d is not None:
+            ctx.wdb.mk_rcc(self._name, [0,0,0], [0,0,h], d/2.)
+        elif d1 is not None and d2 is not None:
+            ctx.wdb.mk_trc_h(self._name, [0,0,0], [0,0,h], d1/2., d2/2.)
 
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
-    [Cube])
+    [Cube, Cylinder])
 
-builtins = dict((f.func_name, f) for f in [cylinder])
+builtins = dict((f.func_name, f) for f in [])
 builtins.update(_builtinClasses)
 
 
