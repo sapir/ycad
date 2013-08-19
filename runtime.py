@@ -17,6 +17,7 @@ class Context:
         try:
             return self.scope[name]
         except LookupError:
+            global builtins
             return builtins[name]
 
     def setVar(self, name, value):
