@@ -10,6 +10,9 @@ cdef extern from "raytrace.h":
     struct rt_wdb:
         pass
 
+    struct rt_db_internal:
+        pass
+
     struct db_i:
         pass
 

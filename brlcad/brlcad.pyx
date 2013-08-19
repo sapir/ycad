@@ -15,6 +15,9 @@ cdef np.ndarray[c_brlcad.fastf_t, ndim=1] _as_vec(lst):
     return np.array(lst, dtype='double')
 
 
+cdef class RtInternal:
+    cdef c_brlcad.rt_db_internal data
+
 cdef class WDB:
     cdef c_brlcad.rt_wdb *ptr
 
