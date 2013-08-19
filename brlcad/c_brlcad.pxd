@@ -27,3 +27,5 @@ cdef extern from "wdb.h":
     int mk_sph(rt_wdb *db, char *name, point_t center, fastf_t radius)
     int mk_rcc(rt_wdb *db, char *name, point_t base, vect_t height,
         fastf_t radius)
+    int mk_trc_h(rt_wdb *db, char *name, point_t base, vect_t height,
+        fastf_t rad_base, fastf_t rad_top)

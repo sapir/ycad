@@ -49,6 +49,14 @@ cdef class WDB:
 
         _check_res(res)
 
+    def mk_trc_h(self, bytes name, base, height, rad_base, rad_top):
+        res = c_brlcad.mk_trc_h(self.ptr, name,
+            <c_brlcad.point_t> _as_vec(base).data,
+            <c_brlcad.vect_t> _as_vec(height).data,
+            rad_base, rad_top)
+
+        _check_res(res)
+
     cpdef close(self):
         c_brlcad.wdb_close(self.ptr)
 
