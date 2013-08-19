@@ -9,7 +9,7 @@ class BrlcadError(StandardError):
 
 cdef _check_res(int res):
     if res < 0:
-        raise BrlcadError()
+        raise BrlcadError(res)
 
 cdef np.ndarray[c_brlcad.fastf_t, ndim=1] _as_vec(lst):
     return np.array(lst, dtype='double')
