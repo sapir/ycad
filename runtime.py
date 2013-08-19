@@ -2,6 +2,7 @@
 
 from ast_ import ReturnException
 from itertools import count, chain
+import numpy as np
 import brlcad
 
 
@@ -32,6 +33,12 @@ def _autoname():
 class BrlCadObject:
     def __init__(self):
         self._name = _autoname()
+
+    def move(self, ctx, x, y, z):
+        mat = np.identity(4)
+        brlcad.set_mat_deltas(mat, x, y, z)
+        ctx.wdb.apply_mat(self._name, mat)
+        return self
 
 class Cube(BrlCadObject):
     def __init__(self, ctx, s):
