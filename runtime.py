@@ -9,6 +9,7 @@ class Context:
     def __init__(self):
         self.scope = {}
         self.wdb = brlcad.wdb_fopen('temp.g')
+        self.wdb.mk_id("ycad temp database")
 
     def __del__(self):
         self.wdb.close()
