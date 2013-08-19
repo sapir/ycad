@@ -24,6 +24,16 @@ cdef class WDB:
     cpdef close(self):
         c_brlcad.wdb_close(self.ptr)
 
+    def import_(self, bytes name, mat):
+        inter = RtInternal()
+        res = c_brlcad.wdb_import(self.ptr, &inter.data, name,
+            <c_brlcad.mat_t> _as_vec(mat).data)
+        _check_res(res)
+
+    def put_internal(self, bytes name, RtInternal inter, double local2mm=1.0):
+        res = c_brlcad.wdb_put_internal(self.ptr, name, &inter.data, local2mm)
+        _check_res(res)
+
     def mk_id(self, bytes name, bytes unit_name=None):
         cdef int res
 

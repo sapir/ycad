@@ -23,6 +23,10 @@ cdef extern from "rtgeom.h":
 cdef extern from "wdb.h":
     rt_wdb *wdb_fopen(char *filename)
     void wdb_close(rt_wdb *db)
+    
+    int wdb_import(rt_wdb *db, rt_db_internal *inter, char *name, mat_t mat)
+    int wdb_put_internal(rt_wdb *db, const char *name, rt_db_internal *inter,
+        double local2mm)
 
     int mk_id(rt_wdb *db, char *name)
     int mk_id_units(rt_wdb *db, char *name, char *units)
