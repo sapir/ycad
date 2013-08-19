@@ -15,6 +15,10 @@ cdef np.ndarray[c_brlcad.fastf_t, ndim=1] _as_vec(lst):
     return np.array(lst, dtype='double')
 
 
+def set_mat_deltas(np.ndarray mat, x, y, z):
+    c_brlcad.MAT_DELTAS(<c_brlcad.mat_t> mat.data, x, y, z)
+
+
 cdef class RtInternal:
     cdef c_brlcad.rt_db_internal data
 
@@ -24,17 +28,18 @@ cdef class WDB:
     cpdef close(self):
         c_brlcad.wdb_close(self.ptr)
 
-    def import_(self, bytes name, mat):
+    def import_(self, bytes name, np.ndarray mat):
         inter = RtInternal()
         res = c_brlcad.wdb_import(self.ptr, &inter.data, name,
-            <c_brlcad.mat_t> _as_vec(mat).data)
+            <c_brlcad.mat_t> mat.data)
         _check_res(res)
+        return inter
 
     def put_internal(self, bytes name, RtInternal inter, double local2mm=1.0):
         res = c_brlcad.wdb_put_internal(self.ptr, name, &inter.data, local2mm)
         _check_res(res)
 
-    def apply_mat(self, bytes name, mat):
+    def apply_mat(self, bytes name, np.ndarray mat):
         inter = self.import_(name, mat)
         self.put_internal(name, inter)
 
