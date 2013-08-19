@@ -7,6 +7,11 @@ cdef extern from "vmath.h":
     ctypedef fastf_t vect_t[3]
     ctypedef fastf_t mat_t[4*4]
 
+    void MAT_ZERO(mat_t mat)
+    void MAT_IDN(mat_t mat)
+    void MAT_DELTAS(mat_t mat, fastf_t x, fastf_t y, fastf_t z)
+    void MAT_DELTAS_VEC(mat_t mat, vect_t vec)
+
 cdef extern from "raytrace.h":
     struct rt_wdb:
         pass
