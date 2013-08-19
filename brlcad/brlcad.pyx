@@ -21,6 +21,9 @@ cdef class RtInternal:
 cdef class WDB:
     cdef c_brlcad.rt_wdb *ptr
 
+    cpdef close(self):
+        c_brlcad.wdb_close(self.ptr)
+
     def mk_id(self, bytes name, bytes unit_name=None):
         cdef int res
 
@@ -59,9 +62,6 @@ cdef class WDB:
             rad_base, rad_top)
 
         _check_res(res)
-
-    cpdef close(self):
-        c_brlcad.wdb_close(self.ptr)
 
 def wdb_fopen(filename):
     db = WDB()
