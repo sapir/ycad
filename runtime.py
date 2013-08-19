@@ -3,6 +3,20 @@
 from ast_ import ReturnException
 
 
+class Context:
+    def __init__(self):
+        self.scope = {}
+
+    def getVar(self, name):
+        try:
+            return self.scope[name]
+        except LookupError:
+            return builtins[name]
+
+    def setVar(self, name, value):
+        self.scope[name] = value
+
+
 def cube(ctx, s):
     assert isinstance(s, float)
     return 'cube(size={0});'.format(s)
@@ -21,20 +35,6 @@ def cylinder(ctx, h, d, d1=None, d2=None):
 
 builtins = dict((f.func_name, f)
     for f in [cube, cylinder])
-
-
-class Context:
-    def __init__(self):
-        self.scope = {}
-
-    def getVar(self, name):
-        try:
-            return self.scope[name]
-        except LookupError:
-            return builtins[name]
-
-    def setVar(self, name, value):
-        self.scope[name] = value
 
 
 def run(parsedProgram):
