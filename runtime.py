@@ -1,11 +1,17 @@
 #!/usr/bin/python
 
 from ast_ import ReturnException
+from itertools import count, chain
+import brlcad
 
 
 class Context:
     def __init__(self):
         self.scope = {}
+        self.wdb = brlcad.wdb_fopen('temp.g')
+
+    def __del__(self):
+        self.wdb.close()
 
     def getVar(self, name):
         try:
@@ -17,9 +23,23 @@ class Context:
         self.scope[name] = value
 
 
-def cube(ctx, s):
-    assert isinstance(s, float)
-    return 'cube(size={0});'.format(s)
+_autoNameCounter = count(1)
+def _autoname():
+    return 'autoname.{0}'.format(next(_autoNameCounter))
+
+class BrlCadObject:
+    def __init__(self):
+        self._name = _autoname()
+
+class Cube(BrlCadObject):
+    def __init__(self, ctx, s):
+        BrlCadObject.__init__(self)
+
+        assert isinstance(s, float)
+
+        self.s = s
+        ctx.wdb.mk_rpp(self._name, [0,0,0], [s,s,s])
+
 
 def cylinder(ctx, h, d, d1=None, d2=None):
     assert isinstance(h, float)
@@ -33,8 +53,12 @@ def cylinder(ctx, h, d, d1=None, d2=None):
     elif d1 is not None and d2 is not None:
         return 'cylinder(h={0}, r1={1}, r2={2});'.format(h, d1/2., d2/2.)
 
-builtins = dict((f.func_name, f)
-    for f in [cube, cylinder])
+
+_builtinClasses = dict((c.__name__.lower(), c) for c in
+    [Cube])
+
+builtins = dict((f.func_name, f) for f in [cylinder])
+builtins.update(_builtinClasses)
 
 
 def run(parsedProgram):
