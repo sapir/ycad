@@ -126,7 +126,8 @@ program = ZeroOrMore(stmt)
 program.ignore(Literal("#") + restOfLine)
 
 
-import sys
-filename, = sys.argv[1:]
-parsed = program.parseFile(filename)
-run(parsed, 'temp.g')
+if __name__ == '__main__':
+    import sys
+    filename, = sys.argv[1:]
+    parsed = program.parseFile(filename)
+    run(parsed, 'temp.g')
