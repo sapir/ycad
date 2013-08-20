@@ -178,6 +178,8 @@ class FuncDefStmt(Stmt):
             except ReturnException as e:
                 return e.value
 
+        func.func_name = self.funcName
+
         ctx.setVar(self.funcName, func)
 
 class ReturnStmt(Stmt):
