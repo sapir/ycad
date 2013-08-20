@@ -22,7 +22,7 @@ class Context:
 
     def close(self):
         # end default combination
-        self.endCombination()
+        self.endCombination(asRegion=True)
 
         self.wdb.close()
         self.wdb = None
@@ -44,9 +44,9 @@ class Context:
     def startCombination(self, op):
         self.combinations.append(Combination(self, op))
 
-    def endCombination(self):
+    def endCombination(self, asRegion=False):
         comb = self.combinations.pop()
-        comb.make(self)
+        comb.make(self, asRegion=asRegion)
         return comb
 
 
@@ -105,8 +105,8 @@ class Combination(BrlCadObject):
     def add(self, obj):
         self._objList.add_member(obj._name, self._opVal)
 
-    def make(self, ctx):
-        ctx.wdb.mk_lfcomb(self._name, self._objList)
+    def make(self, ctx, asRegion):
+        ctx.wdb.mk_lfcomb(self._name, self._objList, asRegion)
 
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
@@ -119,7 +119,7 @@ builtins.update(_builtinClasses)
 def run(parsedProgram, outputFilename):
     try:
         ctx = Context(outputFilename)
-        
+
         for stmt in parsedProgram:
             stmt.exec_(ctx)
 
