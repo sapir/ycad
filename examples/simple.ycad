@@ -1,2 +1,4 @@
-show cube(s=5mm)
-show cylinder(h=6mm, d1=7mm, d2=2mm)
+show sub {
+    cube(s=5mm)
+    cylinder(h=6mm, d1=7mm, d2=2mm)
+}
