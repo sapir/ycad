@@ -47,6 +47,9 @@ literal.setParseAction(lambda s,loc,toks: LiteralExpr(toks[0]))
 
 
 expr = Forward()
+stmt = Forward()
+block = Group(surround("{}", ZeroOrMore(stmt)))
+
 
 varName = Word(alphas + "_", alphanums + "_")
 varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
@@ -61,8 +64,7 @@ attrAccess = varName + OneOrMore("." + varName)
 
 vector = Group(surround("[]", delimitedList(expr)))
 
-exprBlock = Group(surround("{}", ZeroOrMore(expr)))
-csgExpr = oneOfKeywords("add sub mul") + exprBlock
+csgExpr = oneOfKeywords("add sub mul") + block
 csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1].asList()))
 
 # binaryOp = expr + oneOf("* / + - == < > <= >=") + expr
@@ -77,12 +79,8 @@ expr << (csgExpr | transform | shortTransform | funcCall | attrAccess
 
 
 
-stmt = Forward()
-
 assignment = varName + Suppress("=") + expr
 assignment.setParseAction(lambda s,loc,toks: AssignStmt(toks[0], toks[1]))
-
-block = Group(surround("{}", ZeroOrMore(stmt)))
 
 # TODO: allow named params but only after positional params
 paramDef = varName + Optional(Literal("=").suppress() + literal)

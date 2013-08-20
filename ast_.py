@@ -50,18 +50,18 @@ class VectorExpr(Expr):
         self.exprs = exprs
 
 class CsgExpr(Expr):
-    def __init__(self, opName, exprs):
+    def __init__(self, opName, block):
         self.opName = opName
-        self.exprs = exprs
+        self.block = block
 
     def __repr__(self):
-        return '{0.opName} { {0.exprs} }'.format(self)
+        return '{0.opName} { {0.block} }'.format(self)
 
     def eval(self, ctx):
         ctx.startCombination(self.opName)
         
-        for expr in self.exprs:
-            ctx.curCombination.add(expr.eval(ctx))
+        for stmt in self.block:
+            stmt.exec_(ctx)
 
         return ctx.endCombination()
 
