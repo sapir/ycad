@@ -116,9 +116,10 @@ builtins = dict((f.func_name, f) for f in [])
 builtins.update(_builtinClasses)
 
 
-def run(parsedProgram):
+def run(parsedProgram, outputFilename):
     try:
-        ctx = Context('temp.g')
+        ctx = Context(outputFilename)
+        
         for stmt in parsedProgram:
             stmt.exec_(ctx)
 

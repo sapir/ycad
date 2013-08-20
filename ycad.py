@@ -129,4 +129,4 @@ program.ignore(Literal("#") + restOfLine)
 import sys
 filename, = sys.argv[1:]
 parsed = program.parseFile(filename)
-run(parsed)
+run(parsed, 'temp.g')
