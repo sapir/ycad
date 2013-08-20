@@ -58,7 +58,7 @@ class BrlCadObject:
     def __init__(self, name=None):
         self._name = _autoname() if name is None else name
 
-    def move(self, ctx, x, y, z):
+    def move(self, ctx, x=0, y=0, z=0):
         mat = np.identity(4)
         brlcad.set_mat_deltas(mat, x, y, z)
         ctx.wdb.apply_mat(self._name, mat)
