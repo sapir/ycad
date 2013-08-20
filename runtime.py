@@ -64,6 +64,21 @@ class Cylinder(BrlCadObject):
         elif d1 is not None and d2 is not None:
             ctx.wdb.mk_trc_h(self._name, [0,0,0], [0,0,h], d1/2., d2/2.)
 
+class Combination(BrlCadObject):
+    UNION = brlcad.CombinationList.UNION
+    SUBTRACT = brlcad.CombinationList.SUBTRACT
+    INTERSECT = brlcad.CombinationList.INTERSECT
+
+    def __init__(self, ctx):
+        BrlCadObject.__init__(self)
+        self._objList = brlcad.CombinationList()
+
+    def add(self, obj, op):
+        self._objList.add_member(obj._name, op)
+
+    def make(self, ctx):
+        ctx.wdb.mk_lfcomb(self._name, self._objList)
+
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
     [Cube, Cylinder])
