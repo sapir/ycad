@@ -13,6 +13,9 @@ cdef extern from "vmath.h":
     void MAT_IDN(mat_t mat)
     void MAT_DELTAS(mat_t mat, fastf_t x, fastf_t y, fastf_t z)
     void MAT_DELTAS_VEC(mat_t mat, vect_t vec)
+    void MAT_SCALE(mat_t mat, fastf_t x, fastf_t y, fastf_t z)
+    void MAT_SCALE_VEC(mat_t mat, vect_t vec)
+    void MAT_SCALE_ALL(mat_t mat, fastf_t value)
 
 cdef extern from "raytrace.h":
     struct rt_wdb:
