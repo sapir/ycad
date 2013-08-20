@@ -64,6 +64,12 @@ class BrlCadObject:
         ctx.wdb.apply_mat(self._name, mat)
         return self
 
+    def scale(self, ctx, x=1, y=1, z=1):
+        mat = np.identity(4)
+        brlcad.set_mat_scale(mat, x, y, z)
+        ctx.wdb.apply_mat(self._name, mat)
+        return self
+
 class Cube(BrlCadObject):
     def __init__(self, ctx, s):
         BrlCadObject.__init__(self)
