@@ -67,6 +67,6 @@ cdef extern from "wdb.h":
     
     wmember *mk_addmember(char *name, bu_list *headp, mat_t mat, int op)
 
-    int mk_lcomb(rt_wdb *db, char *name, bu_list *headp, int is_region,
+    int mk_lcomb(rt_wdb *db, char *name, wmember *headp, int is_region,
         char *shadername, char *shaderargs, unsigned char rgb[3], int inherit)
-    int mk_lfcomb(rt_wdb *db, char *name, bu_list *headp, int is_region)
+    int mk_lfcomb(rt_wdb *db, char *name, wmember *headp, int is_region)
