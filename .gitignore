@@ -39,4 +39,4 @@ nosetests.xml
 *.sublime-workspace
 brlcad/*.c
 temp.g
-examples/*.stl
+*.stl
