@@ -76,9 +76,23 @@ shortTransform = oneOfKeywords("dx dy dz rot sx sy sz") + surround("()", expr) +
 
 parensExpr = surround("()", expr)
 
-expr << (csgExpr | transform | shortTransform | funcCall | attrAccess
-    | literal | vector | varName | parensExpr)
+exprBeforeMethods = (csgExpr | transform | shortTransform | funcCall
+    | attrAccess | literal | vector | varName | parensExpr)
 
+# allow method calls after an expression
+expr << exprBeforeMethods + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction())
+
+def exprParseAction(s, loc, toks):
+    finalExpr = toks.pop(0)
+    
+    while toks:
+        varName = toks.pop(0)
+        paramList = toks.pop(0).asList()
+        finalExpr = MethodCallExpr(finalExpr, varName, paramList)
+    
+    return finalExpr
+
+expr.setParseAction(exprParseAction)
 
 
 assignment = varName + Suppress("=") + expr

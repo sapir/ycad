@@ -62,6 +62,26 @@ class CsgExpr(Expr):
         self.block.exec_(ctx)
         return ctx.endCombination()
 
+class MethodCallExpr(Expr):
+    def __init__(self, expr, methodName, params):
+        self.expr = expr
+        self.methodName = methodName
+        self.params = params
+
+    def __repr__(self):
+        return '{0}.{1}({2})'.format(repr(self.expr), repr(self.methodName),
+            repr(self.params))
+
+    def eval(self, ctx):
+        baseObj = self.expr.eval(ctx)
+
+        kwargs = dict((nameExpr.name, val.eval(ctx))
+            for (nameExpr, val) in self.params)
+
+        method = getattr(baseObj, self.methodName.name)
+
+        return method(ctx, **kwargs)
+
 
 class Stmt:
     def exec_(self, ctx):
