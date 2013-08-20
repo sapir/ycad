@@ -31,8 +31,8 @@ def _autoname():
     return 'autoname.{0}'.format(next(_autoNameCounter))
 
 class BrlCadObject:
-    def __init__(self):
-        self._name = _autoname()
+    def __init__(self, name=None):
+        self._name = _autoname() if name is None else name
 
     def move(self, ctx, x, y, z):
         mat = np.identity(4)
