@@ -97,7 +97,7 @@ class BlockStmt(Stmt):
     def __repr__(self):
         return '{{\n\t{0}\n}}'.format(
             '\n\t'.join(
-                repr(stmt) for stmt in sef.stmts))
+                repr(stmt) for stmt in self.stmts))
 
     def exec_(self,ctx):
         for stmt in self.stmts:
