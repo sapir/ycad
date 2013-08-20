@@ -63,7 +63,7 @@ paramList = Group(Optional(delimitedList(Group(param))))
 funcCall = varName + surround("()", paramList)
 funcCall.setParseAction(lambda s,loc,toks: FuncCallExpr(toks[0], toks[1].asList()))
 
-attrAccess = varName + OneOrMore("." + varName)
+# TODO: attrAccess = varName + OneOrMore("." + varName)
 
 vector = surround("[]", delimitedList(expr))
 vector.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
@@ -79,7 +79,7 @@ shortTransform = oneOfKeywords("dx dy dz rot sx sy sz") + surround("()", expr) +
 parensExpr = surround("()", expr)
 
 exprBeforeMethods = (csgExpr | transform | shortTransform | funcCall
-    | attrAccess | literal | vector | varName | parensExpr)
+    | literal | vector | varName | parensExpr)
 
 # allow method calls after an expression
 expr << exprBeforeMethods + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction())
