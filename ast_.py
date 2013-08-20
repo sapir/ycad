@@ -173,7 +173,7 @@ class FuncDefStmt(Stmt):
         # TODO: params
         def func(ctx):
             try:
-                block.exec_(ctx)
+                self.block.exec_(ctx)
 
             except ReturnException as e:
                 return e.value
