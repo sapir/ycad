@@ -98,5 +98,7 @@ def run(parsedProgram):
         for stmt in parsedProgram:
             stmt.exec_(ctx)
 
+        ctx.close()
+
     except ReturnException:
         raise RuntimeError("return from main program!")
