@@ -13,7 +13,12 @@ class Context:
         self.wdb.mk_id("ycad temp database")
 
     def __del__(self):
+        if self.wdb is not None:
+            self.close()
+
+    def close(self):
         self.wdb.close()
+        self.wdb = None
 
     def getVar(self, name):
         try:
