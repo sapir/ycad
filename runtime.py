@@ -7,14 +7,14 @@ import brlcad
 
 
 class Context:
-    def __init__(self):
+    def __init__(self, outputFilename, dbTitle='ycad database'):
         self.scope = {}
 
         defComb = Combination(self, op='add', name='main')
         self.combinations = [defComb]
 
-        self.wdb = brlcad.wdb_fopen('temp.g')
-        self.wdb.mk_id("ycad temp database")
+        self.wdb = brlcad.wdb_fopen(outputFilename)
+        self.wdb.mk_id(dbTitle)
 
     def __del__(self):
         if self.wdb is not None:
@@ -118,7 +118,7 @@ builtins.update(_builtinClasses)
 
 def run(parsedProgram):
     try:
-        ctx = Context()
+        ctx = Context('temp.g')
         for stmt in parsedProgram:
             stmt.exec_(ctx)
 
