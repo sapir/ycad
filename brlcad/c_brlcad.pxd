@@ -64,4 +64,7 @@ cdef extern from "wdb.h":
         fastf_t radius)
     int mk_trc_h(rt_wdb *db, char *name, point_t base, vect_t height,
         fastf_t rad_base, fastf_t rad_top)
+    
     wmember *mk_addmember(char *name, bu_list *headp, mat_t mat, int op)
+
+    int mk_lfcomb(rt_wdb *db, char *name, bu_list *headp, int is_region)
