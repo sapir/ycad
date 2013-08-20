@@ -18,6 +18,9 @@ cdef np.ndarray[c_brlcad.fastf_t, ndim=1] _as_vec(lst):
 def set_mat_deltas(np.ndarray mat, x, y, z):
     c_brlcad.MAT_DELTAS(<c_brlcad.mat_t> mat.data, x, y, z)
 
+def set_mat_scale(np.ndarray mat, x, y, z):
+    c_brlcad.MAT_SCALE(<c_brlcad.mat_t> mat.data, x, y, z)
+
 
 cdef class RtInternal:
     cdef c_brlcad.rt_db_internal data
