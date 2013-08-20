@@ -166,7 +166,7 @@ class FuncDefStmt(Stmt):
         self.block = block
 
     def __repr__(self):
-        return('func {0.funcName}({0.paramsList}) {1}'
+        return ('func {0.funcName}({0.paramsList}) {1}'
             .format(self, repr(self.block)))
 
     def exec_(self, ctx):
