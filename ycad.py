@@ -134,7 +134,7 @@ forStmt.setParseAction(lambda s,loc,toks: ForStmt(toks[0], toks[1], toks[2]))
 
 part = Keyword("part") + stringLiteral + block
 
-exprStmt = expr.copy().setParseAction(lambda s,loc,toks: ExprStmt(toks[0]))
+exprStmt = expr.copy().addParseAction(lambda s,loc,toks: ExprStmt(toks[0]))
 
 stmt << (block | funcDef | assignment | simpleStmt | ifStmt | forStmt | part | exprStmt)
 
