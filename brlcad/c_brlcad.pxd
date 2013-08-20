@@ -33,6 +33,8 @@ cdef extern from "bu.h":
         bu_list *forw
         bu_list *back
 
+    void BU_LIST_INIT(bu_list *_hp)
+
 cdef extern from "wdb.h":
     struct wmember:
         bu_list l
