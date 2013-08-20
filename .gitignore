@@ -37,3 +37,4 @@ nosetests.xml
 # Other
 *.sublime-project
 *.sublime-workspace
+brlcad/*.c
