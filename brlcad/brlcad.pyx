@@ -22,6 +22,26 @@ def set_mat_deltas(np.ndarray mat, x, y, z):
 cdef class RtInternal:
     cdef c_brlcad.rt_db_internal data
 
+cdef class CombinationList:
+    cdef c_brlcad.wmember wm_head
+
+    UNION = c_brlcad.WMOP_UNION
+    SUBTRACT = c_brlcad.WMOP_SUBTRACT
+    INTERSECT = c_brlcad.WMOP_INTERSECT
+
+    def __init__(self):
+        c_brlcad.BU_LIST_INIT(&self.wm_head.l)
+
+    def add_member(self, bytes name, op, np.ndarray mat=None):
+        cdef c_brlcad.fastf_t *matp
+
+        if mat is None:
+            matp = NULL
+        else:
+            matp = <c_brlcad.fastf_t*> mat.data
+
+        c_brlcad.mk_addmember(name, &self.wm_head.l, matp, op)
+
 cdef class WDB:
     cdef c_brlcad.rt_wdb *ptr
 
@@ -80,6 +100,10 @@ cdef class WDB:
             <c_brlcad.vect_t> _as_vec(height).data,
             rad_base, rad_top)
 
+        _check_res(res)
+
+    def mk_lfcomb(self, bytes name, CombinationList lst, is_region=True):
+        res = c_brlcad.mk_lfcomb(self.ptr, name, &lst.wm_head, is_region)
         _check_res(res)
 
 def wdb_fopen(filename):
