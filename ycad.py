@@ -48,7 +48,9 @@ literal.setParseAction(lambda s,loc,toks: LiteralExpr(toks[0]))
 
 expr = Forward()
 stmt = Forward()
-block = Group(surround("{}", ZeroOrMore(stmt)))
+
+block = surround("{}", ZeroOrMore(stmt))
+block.setParseAction(lambda s,loc,toks: BlockStmt(toks.asList()))
 
 
 varName = Word(alphas + "_", alphanums + "_")
@@ -65,7 +67,7 @@ attrAccess = varName + OneOrMore("." + varName)
 vector = Group(surround("[]", delimitedList(expr)))
 
 csgExpr = oneOfKeywords("add sub mul") + block
-csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1].asList()))
+csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1]))
 
 # binaryOp = expr + oneOf("* / + - == < > <= >=") + expr
 

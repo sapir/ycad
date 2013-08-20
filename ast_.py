@@ -59,19 +59,26 @@ class CsgExpr(Expr):
 
     def eval(self, ctx):
         ctx.startCombination(self.opName)
-        
-        for stmt in self.block:
-            stmt.exec_(ctx)
-
+        self.block.exec_(ctx)
         return ctx.endCombination()
 
-
-def _blockRepr(block):
-    return '{{\n\t{0}\n}}'.format('\n\t'.join(repr(stmt) for stmt in block))
 
 class Stmt:
     def exec_(self, ctx):
         raise NotImplementedError
+
+class BlockStmt(Stmt):
+    def __init__(self, stmts):
+        self.stmts = stmts
+
+    def __repr__(self):
+        return '{{\n\t{0}\n}}'.format(
+            '\n\t'.join(
+                repr(stmt) for stmt in sef.stmts))
+
+    def exec_(self,ctx):
+        for stmt in self.stmts:
+            stmt.exec_(ctx)
 
 class AssignStmt(Stmt):
     def __init__(self, lvalue, rvalue):
@@ -107,10 +114,10 @@ class IfStmt(Stmt):
         output = StringIO()
 
         cond, block = self.condsAndBlocks[0]
-        print('if {0} {1}'.format(cond, _blockRepr(block)), file=output)
+        print('if {0} {1}'.format(cond, repr(block)), file=output)
 
         for cond, block in self.condsAndBlocks[1:]:
-            print('else if {0} {1}'.format(cond, _blockRepr(block)), file=output)
+            print('else if {0} {1}'.format(cond, repr(block)), file=output)
 
         if self.elseBlock is not None:
             print('else {0}'.format(self.elseBlock), file=output)
@@ -121,15 +128,12 @@ class IfStmt(Stmt):
         for cond, block in self.condsAndBlocks:
             condVal = cond.eval(ctx)
             if condVal:
-                for stmt in block:
-                    stmt.exec_(ctx)
-
+                block.exec_(ctx)
                 break
 
         else:
             if self.elseBlock is not None:
-                for stmt in self.elseBlock:
-                    stmt.exec_(ctx)
+                self.elseBlock.exec_(ctx)
 
 class ReturnException(BaseException):
     def __init__(self, value=None):
@@ -143,14 +147,13 @@ class FuncDefStmt(Stmt):
 
     def __repr__(self):
         return('func {0.funcName}({0.paramsList}) {1}'
-            .format(self, _blockRepr(self.block)))
+            .format(self, repr(self.block)))
 
     def exec_(self, ctx):
         # TODO: params
         def func(ctx):
             try:
-                for stmt in self.block:
-                    stmt.exec_(ctx)
+                block.exec_(ctx)
 
             except ReturnException as e:
                 return e.value
@@ -175,12 +178,10 @@ class ForStmt(Stmt):
 
     def __repr__(self):
         return 'for {0} in {1} {2}'.format(
-            self.lvalue, self.iterableExpr, _blockRepr(self.block))
+            self.lvalue, self.iterableExpr, repr(self.block))
 
     def exec_(self, ctx):
         iterable = self.iterableExpr.eval(ctx)
         for i in iterable:
             ctx.setVar(self.lvalue, i.eval(ctx))
-
-            for stmt in self.block:
-                stmt.exec_(ctx)
+            self.block.exec_(ctx)
