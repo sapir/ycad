@@ -61,8 +61,9 @@ attrAccess = varName + OneOrMore("." + varName)
 
 vector = Group(surround("[]", delimitedList(expr)))
 
-exprBlock = Literal("{") + ZeroOrMore(expr) + "}"
-csgExpr = oneOfKeywords("union difference intersect add sub mul") + exprBlock
+exprBlock = Group(surround("{}", ZeroOrMore(expr)))
+csgExpr = oneOfKeywords("add sub mul") + exprBlock
+csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1].asList()))
 
 # binaryOp = expr + oneOf("* / + - == < > <= >=") + expr
 

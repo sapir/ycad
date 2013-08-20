@@ -9,6 +9,10 @@ import brlcad
 class Context:
     def __init__(self):
         self.scope = {}
+
+        defComb = Combination(self, op='add', name='main')
+        self.combinations = [defComb]
+
         self.wdb = brlcad.wdb_fopen('temp.g')
         self.wdb.mk_id("ycad temp database")
 
@@ -17,6 +21,9 @@ class Context:
             self.close()
 
     def close(self):
+        # end default combination
+        self.endCombination()
+
         self.wdb.close()
         self.wdb = None
 
@@ -29,6 +36,18 @@ class Context:
 
     def setVar(self, name, value):
         self.scope[name] = value
+
+    @property
+    def curCombination(self):
+        return self.combinations[-1]
+
+    def startCombination(self, op):
+        self.combinations.append(Combination(self, op))
+
+    def endCombination(self):
+        comb = self.combinations.pop()
+        comb.make(self)
+        return comb
 
 
 _autoNameCounter = count(1)
@@ -70,16 +89,21 @@ class Cylinder(BrlCadObject):
             ctx.wdb.mk_trc_h(self._name, [0,0,0], [0,0,h], d1/2., d2/2.)
 
 class Combination(BrlCadObject):
-    UNION = brlcad.CombinationList.UNION
-    SUBTRACT = brlcad.CombinationList.SUBTRACT
-    INTERSECT = brlcad.CombinationList.INTERSECT
+    OPS = {
+            'add' : brlcad.CombinationList.UNION,
+            'sub' : brlcad.CombinationList.SUBTRACT,
+            'mul' : brlcad.CombinationList.INTERSECT,
+        }
 
-    def __init__(self, ctx):
-        BrlCadObject.__init__(self)
+    def __init__(self, ctx, op, name=None):
+        BrlCadObject.__init__(self, name=name)
+        self.op = op
+
         self._objList = brlcad.CombinationList()
+        self._opVal = self.OPS[self.op]
 
-    def add(self, obj, op):
-        self._objList.add_member(obj._name, op)
+    def add(self, obj):
+        self._objList.add_member(obj._name, self._opVal)
 
     def make(self, ctx):
         ctx.wdb.mk_lfcomb(self._name, self._objList)

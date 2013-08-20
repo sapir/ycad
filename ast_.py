@@ -49,6 +49,21 @@ class VectorExpr(Expr):
     def __init__(self, exprs):
         self.exprs = exprs
 
+class CsgExpr(Expr):
+    def __init__(self, opName, exprs):
+        self.opName = opName
+        self.exprs = exprs
+
+    def __repr__(self):
+        return '{0.opName} { {0.exprs} }'.format(self)
+
+    def eval(self, ctx):
+        ctx.startCombination(self.opName)
+        
+        for expr in self.exprs:
+            ctx.curCombination.add(expr.eval(ctx))
+
+        return ctx.endCombination()
 
 
 def _blockRepr(block):
@@ -81,7 +96,7 @@ class ShowStmt(Stmt):
 
     def exec_(self, ctx):
         val = self.value.eval(ctx)
-        print(val)
+        ctx.curCombination.add(val)
 
 class IfStmt(Stmt):
     def __init__(self, condsAndBlocks, elseBlock=None):
