@@ -42,6 +42,12 @@ cdef extern from "wdb.h":
         mat_t wm_mat
         char *wm_name
 
+    # values for wm_op. they're actually macro constants.
+    char WMOP_INTERSECT
+    char WMOP_SUBTRACT
+    char WMOP_UNION
+
+
     rt_wdb *wdb_fopen(char *filename)
     void wdb_close(rt_wdb *db)
     
