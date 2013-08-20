@@ -87,15 +87,15 @@ class AssignStmt(Stmt):
 
         ctx.setVar(self.lvalue.name, self.rvalue.eval(ctx))
 
-class ShowStmt(Stmt):
-    def __init__(self, value):
-        self.value = value
+class ExprStmt(Stmt):
+    def __init__(self, expr):
+        self.expr = expr
 
     def __repr__(self):
-        return 'show {0.value}'.format(self)
+        return repr(self.expr)
 
     def exec_(self, ctx):
-        val = self.value.eval(ctx)
+        val = self.expr.eval(ctx)
         ctx.curCombination.add(val)
 
 class IfStmt(Stmt):

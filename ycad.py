@@ -98,9 +98,8 @@ def _makeSimpleStmt(keyword, stmtCls):
     stmt.setParseAction(lambda s,loc,toks: stmtCls(toks[0]))
     return stmt
 
-showStmt = _makeSimpleStmt('show', ShowStmt)
 returnStmt = _makeSimpleStmt('return', ReturnStmt)
-simpleStmt = showStmt | returnStmt
+simpleStmt = returnStmt
 
 ifStmt = (Keyword("if").suppress() + expr + block
     + ZeroOrMore(Keyword("else").suppress() + Keyword("if").suppress() + expr + block)
@@ -119,7 +118,9 @@ forStmt.setParseAction(lambda s,loc,toks: ForStmt(toks[0], toks[1], toks[2]))
 
 part = Keyword("part") + stringLiteral + block
 
-stmt << (block | funcDef | assignment | simpleStmt | ifStmt | forStmt | part)
+exprStmt = expr.copy().setParseAction(lambda s,loc,toks: ExprStmt(toks[0]))
+
+stmt << (block | funcDef | assignment | simpleStmt | ifStmt | forStmt | part | exprStmt)
 
 
 program = ZeroOrMore(stmt)
