@@ -124,6 +124,7 @@ stmt << (block | funcDef | assignment | simpleStmt | ifStmt | forStmt | part)
 
 program = ZeroOrMore(stmt)
 program.ignore(Literal("#") + restOfLine)
+program.ignore(cStyleComment)
 
 
 if __name__ == '__main__':
