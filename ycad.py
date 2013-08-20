@@ -35,7 +35,8 @@ unit = Or(
 numberWithUnit = number + unit
 numberWithUnit.setParseAction(lambda s,loc,toks: [ toks[0]*toks[1] ])
 
-vectorLiteral = Group(surround("[]", delimitedList(literal)))
+vectorLiteral = surround("[]", delimitedList(literal))
+vectorLiteral.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
 boolLiteral = oneOfKeywords('true false')
 boolLiteral.setParseAction(lambda s,loc,toks: eval(toks[0].title()))
@@ -57,14 +58,15 @@ varName = Word(alphas + "_", alphanums + "_")
 varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
 
 # TODO: allow named params but only after positional params
-param = varName + Literal("=").suppress() + expr
+param = varName + Suppress("=") + expr
 paramList = Group(Optional(delimitedList(Group(param))))
 funcCall = varName + surround("()", paramList)
 funcCall.setParseAction(lambda s,loc,toks: FuncCallExpr(toks[0], toks[1].asList()))
 
 attrAccess = varName + OneOrMore("." + varName)
 
-vector = Group(surround("[]", delimitedList(expr)))
+vector = surround("[]", delimitedList(expr))
+vector.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
 csgExpr = oneOfKeywords("add sub mul") + block
 csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1]))
@@ -99,10 +101,10 @@ assignment = varName + Suppress("=") + expr
 assignment.setParseAction(lambda s,loc,toks: AssignStmt(toks[0], toks[1]))
 
 # TODO: allow named params but only after positional params
-paramDef = varName + Optional(Literal("=").suppress() + literal)
+paramDef = varName + Optional(Literal("=").suppress() + literal, default=None)
 funcDef = (Keyword("func").suppress() + varName
     + Group(surround("()",
-        Group(Optional(delimitedList(Group(paramDef))))))
+        Optional(delimitedList(Group(paramDef)))))
     + block)
 funcDef.setParseAction(lambda s,loc,toks: FuncDefStmt(toks[0], toks[1], toks[2]))
 

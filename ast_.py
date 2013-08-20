@@ -49,6 +49,9 @@ class VectorExpr(Expr):
     def __init__(self, exprs):
         self.exprs = exprs
 
+    def eval(self, ctx):
+        return [expr.eval(ctx) for expr in self.exprs]
+
 class CsgExpr(Expr):
     def __init__(self, opName, block):
         self.opName = opName
@@ -162,7 +165,8 @@ class ReturnException(BaseException):
 class FuncDefStmt(Stmt):
     def __init__(self, funcName, paramsList, block):
         self.funcName = funcName.name
-        self.paramsList = paramsList
+        self.paramsList = [(nameExpr.name, defaultExpr)
+            for (nameExpr, defaultExpr) in paramsList]
         self.block = block
 
     def __repr__(self):
@@ -170,8 +174,27 @@ class FuncDefStmt(Stmt):
             .format(self, repr(self.block)))
 
     def exec_(self, ctx):
-        # TODO: params
-        def func(ctx):
+        def func(ctx, *args, **kwargs):
+            assert len(args) + len(kwargs) <= self.paramsList, "Too many params!"
+
+            paramsIter = iter(self.paramsList)
+            
+            # put args first in zip() so that when args ends before paramsIter,
+            # we don't accidentally consume an extra param from paramsIter
+            for arg, (name, _) in zip(args, paramsIter):
+                # TODO: scope
+                ctx.setVar(name, arg)
+
+            namedParamsLeft = dict(paramsIter)
+            for argName, val in kwargs.iteritems():
+                namedParamsLeft.pop(argName)
+                ctx.setVar(argName, val)
+
+            for name, default in namedParamsLeft.iteritems():
+                # default is a parsed expression, or None if no default value
+                if default is not None:
+                    ctx.setVar(name, default.eval(ctx))
+
             try:
                 self.block.exec_(ctx)
 
