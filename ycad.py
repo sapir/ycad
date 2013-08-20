@@ -128,6 +128,28 @@ program.ignore(Literal("#") + restOfLine)
 
 if __name__ == '__main__':
     import sys
-    filename, = sys.argv[1:]
+    import os
+    from subprocess import check_call
+
+    try:
+        filename, outputName = sys.argv[1:]
+    except:
+        filename, = sys.argv[1:]
+        outputName = os.path.splitext(filename)[0] + '.stl'
+
+    dbName = 'temp.g'
+
+    print('Creating BRL-CAD database ({0})...'.format(dbName),
+        file=sys.stderr)
     parsed = program.parseFile(filename)
-    run(parsed, 'temp.g')
+    run(parsed, dbName)
+
+    print('Converting to STL...', file=sys.stderr)
+    check_call(['g-stl',
+        '-b',          # binary STL
+        '-a', '0.05',  # 0.05mm tolerance
+        '-o', outputName,
+        dbName,
+        'main'])       # 'main' is name of main object in our DB
+
+    print('OK!', file=sys.stderr)
