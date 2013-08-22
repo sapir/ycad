@@ -16,7 +16,12 @@ class LiteralExpr(Expr):
         return repr(self.value)
 
     def eval(self, ctx):
-        return self.value
+        val = self.value
+
+        if isinstance(val, Expr): # e.g. VectorExpr
+            val = val.eval(ctx)
+
+        return val
 
 class VarNameExpr(Expr):
     def __init__(self, name):
