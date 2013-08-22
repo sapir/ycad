@@ -71,6 +71,12 @@ class BrlCadObject:
         self._mat = np.dot(mat, self._mat)
         return self
 
+    def rotate(self, ctx, angle, axis):
+        mat = np.identity(4)
+        brlcad.rotate_mat(mat, axis, np.deg2rad(angle))
+        self._mat = np.dot(mat, self._mat)
+        return self
+
 class Cube(BrlCadObject):
     def __init__(self, ctx, s):
         BrlCadObject.__init__(self)
