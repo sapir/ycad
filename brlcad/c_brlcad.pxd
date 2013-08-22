@@ -17,6 +17,10 @@ cdef extern from "vmath.h":
     void MAT_SCALE_VEC(mat_t mat, vect_t vec)
     void MAT_SCALE_ALL(mat_t mat, fastf_t value)
 
+cdef extern from "bn.h":
+    void bn_mat_arb_rot(mat_t mat, const point_t pt, const vect_t dir_,
+        const fastf_t angle)
+
 cdef extern from "raytrace.h":
     struct rt_wdb:
         pass

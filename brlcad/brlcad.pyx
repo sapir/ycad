@@ -21,6 +21,18 @@ def set_mat_deltas(np.ndarray mat, x, y, z):
 def set_mat_scale(np.ndarray mat, x, y, z):
     c_brlcad.MAT_SCALE(<c_brlcad.mat_t> mat.data, x, y, z)
 
+def rotate_mat(np.ndarray mat, axis, angle):
+    cdef axis_vec = _as_vec(axis)
+    cdef axis_norm = np.linalg.norm(axis_vec)
+    cdef np.ndarray[c_brlcad.fastf_t, ndim=1] unit_axis = axis_vec / axis_norm
+    
+    cdef np.ndarray[c_brlcad.fastf_t, ndim=1] origin = np.zeros(3)
+
+    c_brlcad.bn_mat_arb_rot(
+        <c_brlcad.mat_t> mat.data,
+        <c_brlcad.point_t> origin.data,     # rotate about origin
+        <c_brlcad.vect_t> unit_axis.data,
+        angle)
 
 cdef class RtInternal:
     cdef c_brlcad.rt_db_internal data
@@ -36,14 +48,13 @@ cdef class CombinationList:
         c_brlcad.BU_LIST_INIT(&self.wm_head.l)
 
     def add_member(self, bytes name, op, np.ndarray mat=None):
-        cdef c_brlcad.fastf_t *matp
-
         if mat is None:
-            matp = NULL
+            print 'no mat :('
+            c_brlcad.mk_addmember(name, &self.wm_head.l, NULL, op)
         else:
-            matp = <c_brlcad.fastf_t*> mat.data
-
-        c_brlcad.mk_addmember(name, &self.wm_head.l, matp, op)
+            print 'got mat!', mat
+            c_brlcad.mk_addmember(name, &self.wm_head.l,
+                <c_brlcad.mat_t> mat.data, op)
 
 cdef class WDB:
     cdef c_brlcad.rt_wdb *ptr
