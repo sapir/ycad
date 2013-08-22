@@ -182,7 +182,7 @@ class FuncDefStmt(Stmt):
             # put args first in zip() so that when args ends before paramsIter,
             # we don't accidentally consume an extra param from paramsIter
             for arg, (name, _) in zip(args, paramsIter):
-                # TODO: scope
+                # TODO: scope; new combination
                 ctx.setVar(name, arg)
 
             namedParamsLeft = dict(paramsIter)
