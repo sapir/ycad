@@ -57,17 +57,18 @@ def _autoname():
 class BrlCadObject:
     def __init__(self, name=None):
         self._name = _autoname() if name is None else name
+        self._mat = np.identity(4)
 
     def move(self, ctx, x=0, y=0, z=0):
         mat = np.identity(4)
         brlcad.set_mat_deltas(mat, x, y, z)
-        ctx.wdb.apply_mat(self._name, mat)
+        self._mat = np.dot(mat, self._mat)
         return self
 
     def scale(self, ctx, x=1, y=1, z=1):
         mat = np.identity(4)
         brlcad.set_mat_scale(mat, x, y, z)
-        ctx.wdb.apply_mat(self._name, mat)
+        self._mat = np.dot(mat, self._mat)
         return self
 
 class Cube(BrlCadObject):
@@ -109,7 +110,7 @@ class Combination(BrlCadObject):
         self._opVal = self.OPS[self.op]
 
     def add(self, obj):
-        self._objList.add_member(obj._name, self._opVal)
+        self._objList.add_member(obj._name, self._opVal, obj._mat)
 
     def make(self, ctx, asRegion):
         ctx.wdb.mk_lfcomb(self._name, self._objList, asRegion)
