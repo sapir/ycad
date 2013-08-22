@@ -49,10 +49,8 @@ cdef class CombinationList:
 
     def add_member(self, bytes name, op, np.ndarray mat=None):
         if mat is None:
-            print 'no mat :('
             c_brlcad.mk_addmember(name, &self.wm_head.l, NULL, op)
         else:
-            print 'got mat!', mat
             c_brlcad.mk_addmember(name, &self.wm_head.l,
                 <c_brlcad.mat_t> mat.data, op)
 
