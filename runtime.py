@@ -54,30 +54,31 @@ _autoNameCounter = count(1)
 def _autoname():
     return 'autoname.{0}'.format(next(_autoNameCounter))
 
-class BrlCadObject:
+class BrlCadObject(object):
     def __init__(self, name=None):
         self._name = _autoname() if name is None else name
         self._mat = np.identity(4)
 
+    def _applyMatrix(self, ctx, mat):
+        # ctx.wdb.apply_mat(self._name, mat)
+        self._mat = np.dot(mat, self._mat)
+
     def move(self, ctx, x=0, y=0, z=0):
         mat = np.identity(4)
         brlcad.set_mat_deltas(mat, x, y, z)
-        # self._mat = np.dot(mat, self._mat)
-        ctx.wdb.apply_mat(self._name, mat)
+        self._applyMatrix(ctx, mat)
         return self
 
     def scale(self, ctx, x=1, y=1, z=1):
         mat = np.identity(4)
         brlcad.set_mat_scale(mat, x, y, z)
-        # self._mat = np.dot(mat, self._mat)
-        ctx.wdb.apply_mat(self._name, mat)
+        self._applyMatrix(ctx, mat)
         return self
 
     def rotate(self, ctx, angle, axis):
         mat = np.identity(4)
         brlcad.rotate_mat(mat, axis, np.deg2rad(angle))
-        # self._mat = np.dot(mat, self._mat)
-        ctx.wdb.apply_mat(self._name, mat)
+        self._applyMatrix(ctx, mat)
         return self
 
 class Cube(BrlCadObject):
