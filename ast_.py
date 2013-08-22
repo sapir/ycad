@@ -4,7 +4,7 @@ from __future__ import print_function
 from io import StringIO
 
 
-class Expr:
+class Expr(object):
     def eval(self, ctx):
         raise NotImplementedError
 
@@ -86,7 +86,7 @@ class MethodCallExpr(Expr):
         return method(ctx, **kwargs)
 
 
-class Stmt:
+class Stmt(object):
     def exec_(self, ctx):
         raise NotImplementedError
 
