@@ -181,7 +181,7 @@ stmt << (block | funcDef | assignment | simpleStmt | ifStmt | forStmt | part | e
 
 
 program = ZeroOrMore(stmt)
-program.ignore(Literal("#") + restOfLine)
+program.ignore(pythonStyleComment)
 program.ignore(cStyleComment)
 
 
