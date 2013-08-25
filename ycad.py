@@ -16,7 +16,7 @@ def surround(brackets, grammar):
 
 literal = Forward()
 
-number = Combine(Word(nums) + Optional(Literal(".") + Word(nums)))
+number = Combine(Word(nums) + Optional(Literal(".") + Word(nums))).setName("number")
 number.setParseAction(lambda s,loc,toks: [ float(toks[0]) ])
 
 UNITS = {
@@ -32,34 +32,35 @@ unit = Or(
     for (unitName, unitValue)
     in UNITS.iteritems())
 
-numberWithUnit = number + unit
+numberWithUnit = (number + unit).setName("number with optional unit")
 numberWithUnit.setParseAction(lambda s,loc,toks: [ toks[0]*toks[1] ])
 
-vectorLiteral = surround("[]", delimitedList(literal))
+vectorLiteral = surround("[]", delimitedList(literal)).setName("vector literal")
 vectorLiteral.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
-boolLiteral = oneOfKeywords('true false')
+boolLiteral = oneOfKeywords('true false').setName("boolean literal")
 boolLiteral.setParseAction(lambda s,loc,toks: eval(toks[0].title()))
 
-stringLiteral = QuotedString(quoteChar='"', escChar='\\', escQuote='\\"')
+stringLiteral = QuotedString(quoteChar='"', escChar='\\', escQuote='\\"').setName("string literal")
 
 literal << (numberWithUnit | number | vectorLiteral | boolLiteral | stringLiteral)
+literal.setName("literal")
 literal.setParseAction(lambda s,loc,toks: LiteralExpr(toks[0]))
 
 
 expr = Forward()
 stmt = Forward()
 
-block = surround("{}", ZeroOrMore(stmt))
+block = surround("{}", ZeroOrMore(stmt)).setName("block")
 block.setParseAction(lambda s,loc,toks: BlockStmt(toks.asList()))
 
 
-varName = Word(alphas + "_", alphanums + "_")
+varName = Word(alphas + "_", alphanums + "_").setName("variable name")
 varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
 
 # TODO: attrAccess = varName + OneOrMore("." + varName)
 
-vector = surround("[]", delimitedList(expr))
+vector = surround("[]", delimitedList(expr)).setName("vector expression")
 vector.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
 unaryOpParseAction = lambda s,loc,toks: UnaryOpExpr(toks[0][0], toks[0][1])
@@ -104,14 +105,17 @@ mathExpr = operatorPrecedence(
         ("and", 2, opAssoc.LEFT, binaryOpParseAction),
         ("or", 2, opAssoc.LEFT, binaryOpParseAction),
     ])
+mathExpr.setName("math expression")
 
 # TODO: allow named params but only after positional params
-param = varName + Suppress("=") + expr
-paramList = Group(Optional(delimitedList(Group(param))))
-funcCall = varName + surround("()", paramList)
+param = (varName("paramName") + Suppress("=") + expr("paramValue")).setName("parameter")
+paramList = Group(Optional(delimitedList(Group(param)))).setName("parameter list")
+funcCall = varName("funcName") + surround("()", paramList)("params")
+funcCall.setName("function call")
 funcCall.setParseAction(lambda s,loc,toks: FuncCallExpr(toks[0], toks[1].asList()))
 
-csgExpr = oneOfKeywords("add sub mul") + block
+csgExpr = oneOfKeywords("add sub mul")("op") + block("block")
+csgExpr.setName("csg expression")
 csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1]))
 
 # binaryOp = expr + oneOf("* / + - == < > <= >=") + expr
@@ -136,22 +140,29 @@ def basicExprParseAction(s, loc, toks):
 basicExpr.setParseAction(basicExprParseAction)
 
 expr << basicExpr
+expr.setName("expression")
 
 
-assignment = varName + Suppress("=") + expr
+assignment = varName("lvalue") + Suppress("=") + expr("rvalue")
+assignment.setName("assignment statement")
 assignment.setParseAction(lambda s,loc,toks: AssignStmt(toks[0], toks[1]))
 
 # TODO: allow named params but only after positional params
-paramDef = varName + Optional(Literal("=").suppress() + literal, default=None)
-funcDef = (Keyword("func").suppress() + varName
+paramDef = varName("paramName") + Optional(
+    Literal("=").suppress() + literal("default"), default=None)
+paramDef.setName("parameter definition")
+
+funcDef = (Keyword("func").suppress() + varName("funcName")
     + Group(surround("()",
-        Optional(delimitedList(Group(paramDef)))))
-    + block)
+        Optional(delimitedList(Group(paramDef)))))("params")
+    + block("block"))
+funcDef.setName("func statement")
 funcDef.setParseAction(lambda s,loc,toks: FuncDefStmt(toks[0], toks[1], toks[2]))
 
 
 def _makeSimpleStmt(keyword, stmtCls):
     stmt = Keyword(keyword).suppress() + expr
+    stmt.setName("{0} statement".format(keyword))
     stmt.setParseAction(lambda s,loc,toks: stmtCls(toks[0]))
     return stmt
 
@@ -161,6 +172,7 @@ simpleStmt = returnStmt
 ifStmt = (Keyword("if").suppress() + expr + block
     + ZeroOrMore(Keyword("else").suppress() + Keyword("if").suppress() + expr + block)
     + Optional(Keyword("else").suppress() + block))
+ifStmt.setName("if statement")
 
 def ifStmtAction(s, loc, toks):
     elseBlock = toks.pop() if len(toks) % 2 == 1 else None
@@ -168,22 +180,25 @@ def ifStmtAction(s, loc, toks):
     return IfStmt(condsAndBlocks, elseBlock)
 ifStmt.setParseAction(ifStmtAction)
 
-forStmt = (Keyword("for").suppress() + varName
-    + Keyword("in").suppress() + expr
-    + block)
+forStmt = (Keyword("for").suppress() + varName("iterator")
+    + Keyword("in").suppress() + expr("iterable")
+    + block("block"))
+forStmt.setName("for statement")
 forStmt.setParseAction(lambda s,loc,toks: ForStmt(toks[0], toks[1], toks[2]))
 
-part = Keyword("part") + stringLiteral + block
+part = Keyword("part") + stringLiteral("partName") + block("block")
+part.setName("part statement")
 
 exprStmt = expr.copy().addParseAction(lambda s,loc,toks: ExprStmt(toks[0]))
+exprStmt.setName("expression statement")
 
 stmt << (block | funcDef | assignment | simpleStmt | ifStmt | forStmt | part | exprStmt)
 
 
 program = ZeroOrMore(stmt)
+program.setName("program")
 program.ignore(pythonStyleComment)
 program.ignore(cStyleComment)
-
 
 if __name__ == '__main__':
     import sys
