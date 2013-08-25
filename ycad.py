@@ -16,9 +16,6 @@ def surround(brackets, grammar):
 
 literal = Forward()
 
-number = Combine(Word(nums) + Optional(Literal(".") + Word(nums))).setName("number")
-number.setParseAction(lambda s,loc,toks: [ float(toks[0]) ])
-
 UNITS = {
     'mm' : 1,
     'cm' : 10,
@@ -32,8 +29,11 @@ unit = Or(
     for (unitName, unitValue)
     in UNITS.iteritems())
 
-numberWithUnit = (number + unit).setName("number with optional unit")
-numberWithUnit.setParseAction(lambda s,loc,toks: [ toks[0]*toks[1] ])
+number = Combine(Word(nums) + Optional(Literal(".") + Word(nums))).setName("number")
+number.setParseAction(lambda s,loc,toks: [ float(toks[0]) ])
+
+numberWithUnit = (number + Optional(unit)).setName("number with optional unit")
+numberWithUnit.setParseAction(lambda s,loc,toks: toks[0] if len(toks) == 1 else [toks[0]*toks[1]])
 
 vectorLiteral = surround("[]", delimitedList(literal)).setName("vector literal")
 vectorLiteral.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
@@ -43,7 +43,7 @@ boolLiteral.setParseAction(lambda s,loc,toks: eval(toks[0].title()))
 
 stringLiteral = QuotedString(quoteChar='"', escChar='\\', escQuote='\\"').setName("string literal")
 
-literal << (numberWithUnit | number | vectorLiteral | boolLiteral | stringLiteral)
+literal << (numberWithUnit | vectorLiteral | boolLiteral | stringLiteral)
 literal.setName("literal")
 literal.setParseAction(lambda s,loc,toks: LiteralExpr(toks[0]))
 
