@@ -77,7 +77,8 @@ parensExpr = surround("()", expr)
 
 exprBeforeMethods = (csgExpr | funcCall | literal | vector | varName | parensExpr)
 
-# allow method calls after an expression
+# allow method calls after an expression; use funcCall to parse them, but w/o
+# its parse action
 expr << exprBeforeMethods + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction())
 
 def exprParseAction(s, loc, toks):
