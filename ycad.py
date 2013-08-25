@@ -57,16 +57,59 @@ block.setParseAction(lambda s,loc,toks: BlockStmt(toks.asList()))
 varName = Word(alphas + "_", alphanums + "_")
 varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
 
+# TODO: attrAccess = varName + OneOrMore("." + varName)
+
+vector = surround("[]", delimitedList(expr))
+vector.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
+
+unaryOpParseAction = lambda s,loc,toks: UnaryOpExpr(toks[0][0], toks[0][1])
+
+def binaryOpParseAction(s, loc, toks):
+    toks = toks[0]      # toks are grouped. ignore it.
+
+    expr = toks.pop(0)
+    while toks:
+        op = toks.pop(0)
+        expr2 = toks.pop(0)
+        expr = BinaryOpExpr(op, [expr, expr2])
+
+    return expr
+
+def compareOpParseAction(s, loc, toks):
+    toks = toks[0]      # toks are grouped. ignore it.
+
+    # comparison ops can be chained, i.e. x == y == z means (x == y) and (y == z)
+    comparisons = []
+    while len(toks) > 1:
+        # consume a and op. leave b because it takes part in the next
+        # comparison. the while condition means that we stop if b turns out
+        # to be the last one, i.e. there is no "next comparison".
+        a = toks.pop(0)
+        op = toks.pop(0)
+        b = toks[0]
+        comparisons.append(BinaryOpExpr(op, [a, b]))
+
+    return reduce(lambda a,b: BinaryOpExpr('and', [a,b]), comparisons)
+
+
+mathExpr = operatorPrecedence(
+    (varName | literal | vector),
+    [
+        ("^", 2, opAssoc.RIGHT, binaryOpParseAction),       # exponentiation
+        ("-", 1, opAssoc.RIGHT, unaryOpParseAction),        # negation
+        (oneOf("* /"), 2, opAssoc.LEFT, binaryOpParseAction),
+        (oneOf("+ -"), 2, opAssoc.LEFT, binaryOpParseAction),
+        (oneOf("< <= == != > >="), 2, opAssoc.LEFT, compareOpParseAction),
+        ("not", 1, opAssoc.RIGHT, unaryOpParseAction),      # boolean negation
+        ("and", 2, opAssoc.LEFT, binaryOpParseAction),
+        ("or", 2, opAssoc.LEFT, binaryOpParseAction),
+    ])
+
 # TODO: allow named params but only after positional params
 param = varName + Suppress("=") + expr
 paramList = Group(Optional(delimitedList(Group(param))))
 funcCall = varName + surround("()", paramList)
 funcCall.setParseAction(lambda s,loc,toks: FuncCallExpr(toks[0], toks[1].asList()))
-
-# TODO: attrAccess = varName + OneOrMore("." + varName)
-
-vector = surround("[]", delimitedList(expr))
-vector.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
 csgExpr = oneOfKeywords("add sub mul") + block
 csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1]))
@@ -77,7 +120,7 @@ parensExpr = surround("()", expr)
 
 # allow method calls after an expression; use funcCall to parse them, but w/o
 # its parse action
-basicExpr = ((csgExpr | funcCall | literal | vector | varName | parensExpr)
+basicExpr = ((csgExpr | funcCall | mathExpr | parensExpr)
     + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction()))
 
 def basicExprParseAction(s, loc, toks):
@@ -155,9 +198,9 @@ if __name__ == '__main__':
 
     dbName = 'temp.g'
 
-    print('Creating BRL-CAD database ({0})...'.format(dbName),
-        file=sys.stderr)
+    print('Parsing...', file=sys.stderr)
     parsed = program.parseFile(filename)
+    print('Creating BRL-CAD database ({0})...'.format(dbName), file=sys.stderr)
     run(parsed, dbName)
 
     print('Converting to STL...', file=sys.stderr)

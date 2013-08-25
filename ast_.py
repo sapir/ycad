@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
-from __future__ import print_function
+from __future__ import print_function, division
 from io import StringIO
+import operator
 
 
 class Expr(object):
@@ -56,6 +57,46 @@ class VectorExpr(Expr):
 
     def eval(self, ctx):
         return [expr.eval(ctx) for expr in self.exprs]
+
+class UnaryOpExpr(Expr):
+    OPS = {
+            '-' : operator.neg,
+            'not' : operator.not_,
+        }
+
+    def __init__(self, op, expr):
+        self.op = op
+        self.expr = expr
+
+    def eval(self, ctx):
+        value = self.expr.eval(ctx)
+        return (self.OPS[self.op])(value)
+
+class BinaryOpExpr(Expr):
+    OPS = {
+            '^' :  operator.pow,
+            '*' :  operator.mul,
+            '/' :  operator.div,
+            '+' :  operator.add,
+            '-' :  operator.sub,
+            '<' :  operator.lt,
+            '<=' : operator.le,
+            '==' : operator.eq,
+            '!=' : operator.ne,
+            '>' :  operator.gt,
+            '>=' : operator.ge,
+            'and' : operator.and_,
+            'or' : operator.or_,
+        }
+
+    def __init__(self, op, exprs):
+        self.op = op
+        self.exprs = exprs
+
+    def eval(self, ctx):
+        opFunc = self.OPS[self.op]
+        values = [expr.eval(ctx) for expr in self.exprs]
+        return reduce(opFunc, values)
 
 class CsgExpr(Expr):
     def __init__(self, opName, block):
