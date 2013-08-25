@@ -73,13 +73,9 @@ csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1]))
 
 # binaryOp = expr + oneOf("* / + - == < > <= >=") + expr
 
-transform = oneOfKeywords("translate rotate scale move") + expr + expr
-shortTransform = oneOfKeywords("dx dy dz rot sx sy sz") + surround("()", expr) + expr
-
 parensExpr = surround("()", expr)
 
-exprBeforeMethods = (csgExpr | transform | shortTransform | funcCall
-    | literal | vector | varName | parensExpr)
+exprBeforeMethods = (csgExpr | funcCall | literal | vector | varName | parensExpr)
 
 # allow method calls after an expression
 expr << exprBeforeMethods + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction())
