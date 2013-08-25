@@ -75,13 +75,12 @@ csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1]))
 
 parensExpr = surround("()", expr)
 
-exprBeforeMethods = (csgExpr | funcCall | literal | vector | varName | parensExpr)
-
 # allow method calls after an expression; use funcCall to parse them, but w/o
 # its parse action
-expr << exprBeforeMethods + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction())
+basicExpr = ((csgExpr | funcCall | literal | vector | varName | parensExpr)
+    + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction()))
 
-def exprParseAction(s, loc, toks):
+def basicExprParseAction(s, loc, toks):
     finalExpr = toks.pop(0)
     
     while toks:
@@ -91,7 +90,9 @@ def exprParseAction(s, loc, toks):
     
     return finalExpr
 
-expr.setParseAction(exprParseAction)
+basicExpr.setParseAction(basicExprParseAction)
+
+expr << basicExpr
 
 
 assignment = varName + Suppress("=") + expr
