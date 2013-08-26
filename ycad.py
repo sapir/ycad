@@ -120,10 +120,10 @@ csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1]))
 
 # allow method calls after an expression; use funcCall to parse them, but w/o
 # its parse action
-basicExpr = ((csgExpr | funcCall | mathExpr)
+expr << ((csgExpr | funcCall | mathExpr)
     + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction()))
 
-def basicExprParseAction(s, loc, toks):
+def exprParseAction(s, loc, toks):
     finalExpr = toks.pop(0)
     
     while toks:
@@ -133,9 +133,7 @@ def basicExprParseAction(s, loc, toks):
     
     return finalExpr
 
-basicExpr.setParseAction(basicExprParseAction)
-
-expr << basicExpr
+expr.setParseAction(exprParseAction)
 expr.setName("expression")
 
 
