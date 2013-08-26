@@ -93,7 +93,15 @@ def compareOpParseAction(s, loc, toks):
     return reduce(lambda a,b: BinaryOpExpr('and', [a,b]), comparisons)
 
 
-mathAtom = (literal | varName | vector).setName("math atom")
+# TODO: allow named params but only after positional params
+param = (varName("paramName") + Suppress("=") + expr("paramValue")).setName("parameter")
+paramList = Group(Optional(delimitedList(Group(param)))).setName("parameter list")
+funcCall = varName("funcName") + surround("()", paramList)("params")
+funcCall.setName("function call")
+funcCall.setParseAction(
+    lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.params.asList()))
+
+mathAtom = (literal | funcCall | varName | vector).setName("math atom")
 mathExpr = operatorPrecedence(
     mathAtom,
     [
@@ -108,21 +116,13 @@ mathExpr = operatorPrecedence(
     ])
 mathExpr.setName("math expression")
 
-# TODO: allow named params but only after positional params
-param = (varName("paramName") + Suppress("=") + expr("paramValue")).setName("parameter")
-paramList = Group(Optional(delimitedList(Group(param)))).setName("parameter list")
-funcCall = varName("funcName") + surround("()", paramList)("params")
-funcCall.setName("function call")
-funcCall.setParseAction(
-    lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.params.asList()))
-
 csgExpr = oneOfKeywords("add sub mul")("op") + block("block")
 csgExpr.setName("csg expression")
 csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks.op, toks.block))
 
 # allow method calls after an expression; use funcCall to parse them, but w/o
 # its parse action
-expr << ((csgExpr | funcCall | mathExpr)
+expr << ((csgExpr | mathExpr)
     + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction()))
 
 def exprParseAction(s, loc, toks):
