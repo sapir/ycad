@@ -100,8 +100,8 @@ def compareOpParseAction(s, loc, toks):
 
 # TODO: allow named params but only after positional params
 param = (varName("paramName") + Suppress("=") + expr("paramValue")).setName("parameter")
-paramList = Group(Optional(delimitedList(Group(param)))).setName("parameter list")
-funcCall = varName("funcName") + surround("()", paramList)("params")
+paramList = Optional(delimitedList(Group(param))).setName("parameter list")
+funcCall = varName("funcName") + surround("()", paramList("params"))
 funcCall.setName("function call")
 funcCall.setParseAction(
     lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.params.asList()))
@@ -157,8 +157,8 @@ paramDef = varName("paramName") + Optional(
 paramDef.setName("parameter definition")
 
 funcDef = (Keyword("func").suppress() + varName("funcName")
-    + Group(surround("()",
-        Optional(delimitedList(Group(paramDef)))))("params")
+    + surround("()",
+        Optional(delimitedList(Group(paramDef)))("params"))
     + block("block"))
 funcDef.setName("func statement")
 funcDef.setParseAction(
