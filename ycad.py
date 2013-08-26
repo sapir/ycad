@@ -24,7 +24,7 @@ UNITS = {
 }
 
 unit = MatchFirst(
-    CaselessLiteral(unitName).setName(unitName)
+    CaselessKeyword(unitName).setName(unitName)
         .setParseAction(replaceWith(unitValue))
     for (unitName, unitValue)
     in UNITS.iteritems())
