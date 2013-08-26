@@ -6,6 +6,11 @@ from ast_ import *
 from runtime import *
 
 
+# parse actions have no side effects or global variables, so we can enable
+# packrat parsing for a great speedup
+ParserElement.enablePackrat()
+
+
 def oneOfKeywords(keywords):
     return MatchFirst(map(Keyword, keywords.split()))
 
