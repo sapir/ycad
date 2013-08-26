@@ -41,21 +41,28 @@ class FuncCallExpr(Expr):
         self.posParams = posParams
         self.namedParams = namedParams
 
-    def __repr__(self):
-        params = ', '.join(itertools.chain(
+    @property
+    def _paramsRepr(self):
+        return ', '.join(itertools.chain(
             (repr(expr) for expr in self.posParams),
             ('{0}={1}'.format(nameExpr.name, repr(valExpr))
                 for (nameExpr, valExpr) in self.namedParams)))
+    
+    def __repr__(self):
+        return '{0.funcName}({0._paramsRepr})'.format(self)
 
-        return '{0.funcName}({1})'.format(self, params)
+    def call(self, ctx, funcObj):
+        """Evaluate params in context, and pass them to funcObj."""
 
-    def eval(self, ctx):
         args = [expr.eval(ctx) for expr in self.posParams]
 
         kwargs = dict((nameExpr.name, valExpr.eval(ctx))
             for (nameExpr, valExpr) in self.namedParams)
 
-        return ctx.getVar(self.funcName)(ctx, *args, **kwargs)
+        return funcObj(ctx, *args, **kwargs)
+
+    def eval(self, ctx):
+        return self.call(ctx, ctx.getVar(self.funcName))
 
 # no attributes yet:
 #class AttrAccessExpr(Expr): pass
@@ -121,24 +128,17 @@ class CsgExpr(Expr):
         return ctx.endCombination()
 
 class MethodCallExpr(Expr):
-    def __init__(self, expr, methodName, params):
+    def __init__(self, expr, funcCallExpr):
         self.expr = expr
-        self.methodName = methodName
-        self.params = params
+        self.funcCallExpr = funcCallExpr
 
     def __repr__(self):
-        return '{0}.{1}({2})'.format(repr(self.expr), repr(self.methodName),
-            repr(self.params))
+        return '{0}.{1}'.format(repr(self.expr), repr(self.funcCallExpr))
 
     def eval(self, ctx):
         baseObj = self.expr.eval(ctx)
-
-        kwargs = dict((nameExpr.name, val.eval(ctx))
-            for (nameExpr, val) in self.params)
-
         method = getattr(baseObj, self.methodName.name)
-
-        return method(ctx, **kwargs)
+        return self.funcCallExpr.call(ctx, method)
 
 
 class Stmt(object):

@@ -68,41 +68,6 @@ varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
 vector = surround("[]", delimitedList(expr)).setName("vector expression")
 vector.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
-
-namedParam = Group(varName("paramName") + Suppress("=") + expr("paramValue"))
-namedParam.setName("named parameter")
-posParam = expr + ~FollowedBy("=")
-posParam.setName("positional parameter")
-paramListWithoutPosParams = delimitedList(namedParam)("namedParams") + FollowedBy(")")
-paramListWithPosParams = (delimitedList(posParam)("posParams")
-    + ZeroOrMore(Suppress(",") + namedParam)("namedParams") + FollowedBy(")"))
-paramList = Optional(paramListWithoutPosParams | paramListWithPosParams)
-paramList.setName("parameter list")
-funcCall = varName("funcName") + surround("()", paramList)
-funcCall.setName("function call")
-funcCall.setParseAction(
-    lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.get('posParams', []),
-        toks.get('namedParams', [])))
-
-
-# allow method calls at end of math atom; use funcCall to parse them, but w/o
-# its parse action
-mathAtom = ((literal | funcCall | varName | vector)
-    + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction()))
-mathAtom.setName("math atom")
-
-def mathAtomParseAction(s, loc, toks):
-    finalExpr = toks.pop(0)
-    
-    while toks:
-        varName = toks.pop(0)
-        paramList = toks.pop(0).asList()
-        finalExpr = MethodCallExpr(finalExpr, varName, paramList)
-    
-    return finalExpr
-
-mathAtom.setParseAction(mathAtomParseAction)
-
 unaryOpParseAction = lambda s,loc,toks: UnaryOpExpr(toks[0][0], toks[0][1])
 
 def binaryOpParseAction(s, loc, toks):
@@ -131,6 +96,32 @@ def compareOpParseAction(s, loc, toks):
         comparisons.append(BinaryOpExpr(op, [a, b]))
 
     return reduce(lambda a,b: BinaryOpExpr('and', [a,b]), comparisons)
+
+
+namedParam = Group(varName("paramName") + Suppress("=") + expr("paramValue"))
+namedParam.setName("named parameter")
+posParam = expr + ~FollowedBy("=")
+posParam.setName("positional parameter")
+paramListWithoutPosParams = delimitedList(namedParam)("namedParams") + FollowedBy(")")
+paramListWithPosParams = (delimitedList(posParam)("posParams")
+    + ZeroOrMore(Suppress(",") + namedParam)("namedParams") + FollowedBy(")"))
+paramList = Optional(paramListWithoutPosParams | paramListWithPosParams)
+paramList.setName("parameter list")
+funcCall = varName("funcName") + surround("()", paramList)
+funcCall.setName("function call")
+funcCall.setParseAction(
+    lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.get('posParams', []),
+        toks.get('namedParams', [])))
+
+
+mathAtom = ((literal | funcCall | varName | vector)
+    + ZeroOrMore(Suppress(".") + funcCall))
+mathAtom.setName("math atom")
+
+def mathAtomParseAction(s, loc, toks):
+    return reduce(MethodCallExpr, toks)
+
+mathAtom.setParseAction(mathAtomParseAction)
 
 mathExpr = operatorPrecedence(
     mathAtom,
