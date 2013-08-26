@@ -68,35 +68,6 @@ varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
 vector = surround("[]", delimitedList(expr)).setName("vector expression")
 vector.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
-unaryOpParseAction = lambda s,loc,toks: UnaryOpExpr(toks[0][0], toks[0][1])
-
-def binaryOpParseAction(s, loc, toks):
-    toks = toks[0]      # toks are grouped. ignore it.
-
-    expr = toks.pop(0)
-    while toks:
-        op = toks.pop(0)
-        expr2 = toks.pop(0)
-        expr = BinaryOpExpr(op, [expr, expr2])
-
-    return expr
-
-def compareOpParseAction(s, loc, toks):
-    toks = toks[0]      # toks are grouped. ignore it.
-
-    # comparison ops can be chained, i.e. x == y == z means (x == y) and (y == z)
-    comparisons = []
-    while len(toks) > 1:
-        # consume a and op. leave b because it takes part in the next
-        # comparison. the while condition means that we stop if b turns out
-        # to be the last one, i.e. there is no "next comparison".
-        a = toks.pop(0)
-        op = toks.pop(0)
-        b = toks[0]
-        comparisons.append(BinaryOpExpr(op, [a, b]))
-
-    return reduce(lambda a,b: BinaryOpExpr('and', [a,b]), comparisons)
-
 
 namedParam = Group(varName("paramName") + Suppress("=") + expr("paramValue"))
 namedParam.setName("named parameter")
@@ -131,6 +102,35 @@ def mathAtomParseAction(s, loc, toks):
     return finalExpr
 
 mathAtom.setParseAction(mathAtomParseAction)
+
+unaryOpParseAction = lambda s,loc,toks: UnaryOpExpr(toks[0][0], toks[0][1])
+
+def binaryOpParseAction(s, loc, toks):
+    toks = toks[0]      # toks are grouped. ignore it.
+
+    expr = toks.pop(0)
+    while toks:
+        op = toks.pop(0)
+        expr2 = toks.pop(0)
+        expr = BinaryOpExpr(op, [expr, expr2])
+
+    return expr
+
+def compareOpParseAction(s, loc, toks):
+    toks = toks[0]      # toks are grouped. ignore it.
+
+    # comparison ops can be chained, i.e. x == y == z means (x == y) and (y == z)
+    comparisons = []
+    while len(toks) > 1:
+        # consume a and op. leave b because it takes part in the next
+        # comparison. the while condition means that we stop if b turns out
+        # to be the last one, i.e. there is no "next comparison".
+        a = toks.pop(0)
+        op = toks.pop(0)
+        b = toks[0]
+        comparisons.append(BinaryOpExpr(op, [a, b]))
+
+    return reduce(lambda a,b: BinaryOpExpr('and', [a,b]), comparisons)
 
 mathExpr = operatorPrecedence(
     mathAtom,
