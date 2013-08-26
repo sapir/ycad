@@ -204,7 +204,7 @@ stmt << ~FollowedBy(Literal("}") | StringEnd()) + (block | funcDef
 stmt.setName("statement")
 
 
-program = ZeroOrMore(stmt)
+program = ZeroOrMore(stmt) + StringEnd()
 program.setName("program")
 program.ignore(pythonStyleComment)
 program.ignore(cStyleComment)
