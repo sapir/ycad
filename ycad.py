@@ -118,13 +118,9 @@ csgExpr = oneOfKeywords("add sub mul")("op") + block("block")
 csgExpr.setName("csg expression")
 csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1]))
 
-# binaryOp = expr + oneOf("* / + - == < > <= >=") + expr
-
-parensExpr = surround("()", expr)
-
 # allow method calls after an expression; use funcCall to parse them, but w/o
 # its parse action
-basicExpr = ((csgExpr | funcCall | mathExpr | parensExpr)
+basicExpr = ((csgExpr | funcCall | mathExpr)
     + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction()))
 
 def basicExprParseAction(s, loc, toks):
