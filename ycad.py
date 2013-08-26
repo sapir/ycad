@@ -184,6 +184,7 @@ forStmt.setName("for statement")
 forStmt.setParseAction(
     lambda s,loc,toks: ForStmt(toks.iterator, toks.iterable, toks.block))
 
+# TODO: implement
 part = Keyword("part") + stringLiteral("partName") + block("block")
 part.setName("part statement")
 
