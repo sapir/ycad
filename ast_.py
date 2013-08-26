@@ -183,13 +183,13 @@ class IfStmt(Stmt):
         output = StringIO()
 
         cond, block = self.condsAndBlocks[0]
-        print('if {0} {1}'.format(cond, repr(block)), file=output)
+        print(u'if {0} {1}'.format(cond, repr(block)), file=output)
 
         for cond, block in self.condsAndBlocks[1:]:
-            print('else if {0} {1}'.format(cond, repr(block)), file=output)
+            print(u'else if {0} {1}'.format(cond, repr(block)), file=output)
 
         if self.elseBlock is not None:
-            print('else {0}'.format(self.elseBlock), file=output)
+            print(u'else {0}'.format(self.elseBlock), file=output)
 
         return output.getvalue()
 
