@@ -283,5 +283,5 @@ class ForStmt(Stmt):
     def exec_(self, ctx):
         iterable = self.iterableExpr.eval(ctx)
         for i in iterable:
-            ctx.setVar(self.lvalue, i.eval(ctx))
+            ctx.setVar(self.lvalue, i)
             self.block.exec_(ctx)
