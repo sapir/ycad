@@ -63,13 +63,19 @@ class BrlCadObject(object):
         # ctx.wdb.apply_mat(self._name, mat)
         self._mat = np.dot(mat, self._mat)
 
-    def move(self, ctx, x=0, y=0, z=0):
+    def move(self, ctx, vec=None, x=0, y=0, z=0):
+        if vec is None:
+            vec = [x,y,z]
+
         mat = np.identity(4)
-        brlcad.set_mat_deltas(mat, x, y, z)
+        brlcad.set_mat_deltas(mat, *vec)
         self._applyMatrix(ctx, mat)
         return self
 
-    def scale(self, ctx, x=1, y=1, z=1):
+    def scale(self, ctx, vec=None, x=1, y=1, z=1):
+        if vec is None:
+            vec = [x,y,z]
+
         mat = np.identity(4)
         brlcad.set_mat_scale(mat, x, y, z)
         self._applyMatrix(ctx, mat)
@@ -85,14 +91,22 @@ class Cube(BrlCadObject):
     def __init__(self, ctx, s):
         BrlCadObject.__init__(self)
 
-        assert isinstance(s, float)
-
         self.s = s
-        ctx.wdb.mk_rpp(self._name, [0,0,0], [s,s,s])
+
+        if isinstance(s, float):
+            ctx.wdb.mk_rpp(self._name, [0,0,0], [s,s,s])
+        else:
+            ctx.wdb.mk_rpp(self._name, [0,0,0], s)
 
 class Cylinder(BrlCadObject):
-    def __init__(self, ctx, h, d=None, d1=None, d2=None):
+    def __init__(self, ctx, h, d=None, d1=None, d2=None, r=None,
+            r1=None, r2=None, center=False):
+
         BrlCadObject.__init__(self)
+
+        if r is not None: d = r * 2
+        if r1 is not None: d1 = r1 * 2
+        if r2 is not None: d2 = r2 * 2
         
         assert isinstance(h, float)
         assert d is None or isinstance(d, float)
@@ -104,6 +118,9 @@ class Cylinder(BrlCadObject):
             ctx.wdb.mk_rcc(self._name, [0,0,0], [0,0,h], d/2.)
         elif d1 is not None and d2 is not None:
             ctx.wdb.mk_trc_h(self._name, [0,0,0], [0,0,h], d1/2., d2/2.)
+
+        if center:
+            self.move(ctx, z=-h/2)
 
 class Combination(BrlCadObject):
     OPS = {
