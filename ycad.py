@@ -93,8 +93,9 @@ def compareOpParseAction(s, loc, toks):
     return reduce(lambda a,b: BinaryOpExpr('and', [a,b]), comparisons)
 
 
+mathAtom = (literal | varName | vector).setName("math atom")
 mathExpr = operatorPrecedence(
-    (literal | varName | vector),
+    mathAtom,
     [
         ("^", 2, opAssoc.RIGHT, binaryOpParseAction),       # exponentiation
         ("-", 1, opAssoc.RIGHT, unaryOpParseAction),        # negation
@@ -112,11 +113,12 @@ param = (varName("paramName") + Suppress("=") + expr("paramValue")).setName("par
 paramList = Group(Optional(delimitedList(Group(param)))).setName("parameter list")
 funcCall = varName("funcName") + surround("()", paramList)("params")
 funcCall.setName("function call")
-funcCall.setParseAction(lambda s,loc,toks: FuncCallExpr(toks[0], toks[1].asList()))
+funcCall.setParseAction(
+    lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.params.asList()))
 
 csgExpr = oneOfKeywords("add sub mul")("op") + block("block")
 csgExpr.setName("csg expression")
-csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks[0], toks[1]))
+csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks.op, toks.block))
 
 # allow method calls after an expression; use funcCall to parse them, but w/o
 # its parse action
@@ -139,7 +141,7 @@ expr.setName("expression")
 
 assignment = varName("lvalue") + Suppress("=") + expr("rvalue")
 assignment.setName("assignment statement")
-assignment.setParseAction(lambda s,loc,toks: AssignStmt(toks[0], toks[1]))
+assignment.setParseAction(lambda s,loc,toks: AssignStmt(toks.lvalue, toks.rvalue))
 
 # TODO: allow named params but only after positional params
 paramDef = varName("paramName") + Optional(
@@ -151,7 +153,8 @@ funcDef = (Keyword("func").suppress() + varName("funcName")
         Optional(delimitedList(Group(paramDef)))))("params")
     + block("block"))
 funcDef.setName("func statement")
-funcDef.setParseAction(lambda s,loc,toks: FuncDefStmt(toks[0], toks[1], toks[2]))
+funcDef.setParseAction(
+    lambda s,loc,toks: FuncDefStmt(toks.funcName, toks.params, toks.block))
 
 
 def _makeSimpleStmt(keyword, stmtCls):
@@ -178,7 +181,8 @@ forStmt = (Keyword("for").suppress() + varName("iterator")
     + Keyword("in").suppress() + expr("iterable")
     + block("block"))
 forStmt.setName("for statement")
-forStmt.setParseAction(lambda s,loc,toks: ForStmt(toks[0], toks[1], toks[2]))
+forStmt.setParseAction(
+    lambda s,loc,toks: ForStmt(toks.iterator, toks.iterable, toks.block))
 
 part = Keyword("part") + stringLiteral("partName") + block("block")
 part.setName("part statement")
@@ -188,6 +192,7 @@ exprStmt.setName("expression statement")
 
 stmt << ~FollowedBy(Literal("}") | StringEnd()) + (block | funcDef
     | assignment | simpleStmt | ifStmt | forStmt | part | exprStmt)
+stmt.setName("statement")
 
 
 program = ZeroOrMore(stmt)
