@@ -7,7 +7,7 @@ from runtime import *
 
 
 def oneOfKeywords(keywords):
-    return Or(map(Keyword, keywords.split()))
+    return MatchFirst(map(Keyword, keywords.split()))
 
 def surround(brackets, grammar):
     left, right = brackets
@@ -23,7 +23,7 @@ UNITS = {
     'inch' : 25.4,
 }
 
-unit = Or(
+unit = MatchFirst(
     CaselessLiteral(unitName).setName(unitName)
         .setParseAction(replaceWith(unitValue))
     for (unitName, unitValue)
