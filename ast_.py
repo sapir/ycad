@@ -137,7 +137,7 @@ class MethodCallExpr(Expr):
 
     def eval(self, ctx):
         baseObj = self.expr.eval(ctx)
-        method = getattr(baseObj, self.methodName.name)
+        method = getattr(baseObj, self.funcCallExpr.funcName)
         return self.funcCallExpr.call(ctx, method)
 
 
