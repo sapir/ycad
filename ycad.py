@@ -94,7 +94,7 @@ def compareOpParseAction(s, loc, toks):
 
 
 mathExpr = operatorPrecedence(
-    (varName | literal | vector),
+    (literal | varName | vector),
     [
         ("^", 2, opAssoc.RIGHT, binaryOpParseAction),       # exponentiation
         ("-", 1, opAssoc.RIGHT, unaryOpParseAction),        # negation
