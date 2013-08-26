@@ -101,7 +101,24 @@ funcCall.setName("function call")
 funcCall.setParseAction(
     lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.params.asList()))
 
-mathAtom = (literal | funcCall | varName | vector).setName("math atom")
+# allow method calls at end of math atom; use funcCall to parse them, but w/o
+# its parse action
+mathAtom = ((literal | funcCall | varName | vector)
+    + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction()))
+mathAtom.setName("math atom")
+
+def mathAtomParseAction(s, loc, toks):
+    finalExpr = toks.pop(0)
+    
+    while toks:
+        varName = toks.pop(0)
+        paramList = toks.pop(0).asList()
+        finalExpr = MethodCallExpr(finalExpr, varName, paramList)
+    
+    return finalExpr
+
+mathAtom.setParseAction(mathAtomParseAction)
+
 mathExpr = operatorPrecedence(
     mathAtom,
     [
@@ -120,23 +137,9 @@ csgExpr = oneOfKeywords("add sub mul")("op") + block("block")
 csgExpr.setName("csg expression")
 csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks.op, toks.block))
 
-# allow method calls after an expression; use funcCall to parse them, but w/o
-# its parse action
-expr << ((csgExpr | mathExpr)
-    + ZeroOrMore(Suppress(".") + funcCall.copy().setParseAction()))
-
-def exprParseAction(s, loc, toks):
-    finalExpr = toks.pop(0)
-    
-    while toks:
-        varName = toks.pop(0)
-        paramList = toks.pop(0).asList()
-        finalExpr = MethodCallExpr(finalExpr, varName, paramList)
-    
-    return finalExpr
-
-expr.setParseAction(exprParseAction)
+expr << (csgExpr | mathExpr)
 expr.setName("expression")
+
 
 
 assignment = varName("lvalue") + Suppress("=") + expr("rvalue")
