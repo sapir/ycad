@@ -98,13 +98,21 @@ def compareOpParseAction(s, loc, toks):
     return reduce(lambda a,b: BinaryOpExpr('and', [a,b]), comparisons)
 
 
-# TODO: allow named params but only after positional params
-param = (varName("paramName") + Suppress("=") + expr("paramValue")).setName("parameter")
-paramList = Optional(delimitedList(Group(param))).setName("parameter list")
-funcCall = varName("funcName") + surround("()", paramList("params"))
+namedParam = Group(varName("paramName") + Suppress("=") + expr("paramValue"))
+namedParam.setName("named parameter")
+posParam = expr + ~FollowedBy("=")
+posParam.setName("positional parameter")
+paramListWithoutPosParams = delimitedList(namedParam)("namedParams") + FollowedBy(")")
+paramListWithPosParams = (delimitedList(posParam)("posParams")
+    + ZeroOrMore(Suppress(",") + namedParam)("namedParams") + FollowedBy(")"))
+paramList = Optional(paramListWithoutPosParams | paramListWithPosParams)
+paramList.setName("parameter list")
+funcCall = varName("funcName") + surround("()", paramList)
 funcCall.setName("function call")
 funcCall.setParseAction(
-    lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.params.asList()))
+    lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.get('posParams', []),
+        toks.get('namedParams', [])))
+
 
 # allow method calls at end of math atom; use funcCall to parse them, but w/o
 # its parse action

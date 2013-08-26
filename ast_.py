@@ -3,6 +3,7 @@
 from __future__ import print_function, division
 from io import StringIO
 import operator
+import itertools
 
 
 class Expr(object):
@@ -35,18 +36,26 @@ class VarNameExpr(Expr):
         return ctx.getVar(self.name)
 
 class FuncCallExpr(Expr):
-    def __init__(self, funcName, params):
+    def __init__(self, funcName, posParams, namedParams):
         self.funcName = funcName.name
-        self.params = params
+        self.posParams = posParams
+        self.namedParams = namedParams
 
     def __repr__(self):
-        return '{0.funcName}({0.params})'.format(self)
+        params = ', '.join(itertools.chain(
+            (repr(expr) for expr in self.posParams),
+            ('{0}={1}'.format(nameExpr.name, repr(valExpr))
+                for (nameExpr, valExpr) in self.namedParams)))
+
+        return '{0.funcName}({1})'.format(self, params)
 
     def eval(self, ctx):
-        kwargs = dict((nameExpr.name, val.eval(ctx))
-            for (nameExpr, val) in self.params)
+        args = [expr.eval(ctx) for expr in self.posParams]
 
-        return ctx.getVar(self.funcName)(ctx, **kwargs)
+        kwargs = dict((nameExpr.name, valExpr.eval(ctx))
+            for (nameExpr, valExpr) in self.namedParams)
+
+        return ctx.getVar(self.funcName)(ctx, *args, **kwargs)
 
 # no attributes yet:
 #class AttrAccessExpr(Expr): pass
