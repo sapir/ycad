@@ -192,7 +192,8 @@ part.setName("part statement")
 exprStmt = expr.copy().addParseAction(lambda s,loc,toks: ExprStmt(toks[0]))
 exprStmt.setName("expression statement")
 
-stmt << (block | funcDef | assignment | simpleStmt | ifStmt | forStmt | part | exprStmt)
+stmt << ~FollowedBy(Literal("}") | StringEnd()) + (block | funcDef
+    | assignment | simpleStmt | ifStmt | forStmt | part | exprStmt)
 
 
 program = ZeroOrMore(stmt)
