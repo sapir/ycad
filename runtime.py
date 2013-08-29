@@ -143,11 +143,15 @@ class Combination(BrlCadObject):
         ctx.wdb.mk_lfcomb(self._name, self._objList, asRegion)
 
 
+def _range(ctx, stop):
+    return np.arange(stop)
+
 _builtinClasses = dict((c.__name__.lower(), c) for c in
     [Cube, Cylinder])
 
 builtins = dict((f.func_name, f) for f in [])
 builtins.update(_builtinClasses)
+builtins['range'] = _range
 
 
 def run(parsedProgram, outputFilename):
