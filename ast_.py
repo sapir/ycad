@@ -253,11 +253,22 @@ class FuncDefStmt(Stmt):
                 if default is not None:
                     ctx.setVar(name, default.eval(ctx))
 
+            
+            # default combination for function
+            ctx.startCombination('add')
+            
             try:
                 self.block.exec_(ctx)
 
             except ReturnException as e:
                 return e.value
+
+            finally:
+                comb = ctx.endCombination()
+
+            # if haven't returned anything else, return the combination
+            return comb
+
 
         func.func_name = self.funcName
 
