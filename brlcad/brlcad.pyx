@@ -115,8 +115,8 @@ cdef class WDB:
         _check_res(res)
 
     def mk_bot(self, bytes name, vertices, faces, thicknesses=None,
-            thicknessModes=None, mode=c_brlcad.RT_BOT_SURFACE,
-            orientation=c_brlcad.RT_BOT_CCW):
+            thicknessModes=None, mode=c_brlcad.RT_BOT_SOLID,
+            orientation=c_brlcad.RT_BOT_CW):
 
         assert thicknesses is None
         assert thicknessModes is None
