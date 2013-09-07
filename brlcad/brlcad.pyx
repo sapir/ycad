@@ -118,8 +118,8 @@ cdef class WDB:
             thicknessModes=None, mode=c_brlcad.RT_BOT_SOLID,
             orientation=c_brlcad.RT_BOT_CW):
 
-        assert thicknesses is None
-        assert thicknessModes is None
+        if thicknesses is not None or thicknessModes is not None:
+            raise NotImplementedError
 
         vertexPyArr = np.array(vertices, dtype='double')
         facePyArr = np.array(faces, dtype='int')
