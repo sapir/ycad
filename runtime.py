@@ -122,6 +122,17 @@ class Cylinder(BrlCadObject):
         if center:
             self.move(ctx, z=-h/2)
 
+class Sphere(BrlCadObject):
+    def __init__(self, ctx, r=None, d=None):
+        BrlCadObject.__init__(self)
+
+        if d is not None:
+            r = d / 2.
+
+        assert isinstance(r, float)
+
+        ctx.wdb.mk_sph(self._name, [0,0,0], r)
+
 class Combination(BrlCadObject):
     OPS = {
             'add' : brlcad.CombinationList.UNION,
@@ -147,7 +158,7 @@ def _range(ctx, stop):
     return np.arange(stop)
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
-    [Cube, Cylinder])
+    [Cube, Cylinder, Sphere])
 
 builtins = dict((f.func_name, f) for f in [])
 builtins.update(_builtinClasses)
