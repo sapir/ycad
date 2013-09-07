@@ -32,13 +32,26 @@ cdef extern from "raytrace.h":
         pass
 
 cdef extern from "rtgeom.h":
-    pass
+    # BoT orientations
+    int RT_BOT_UNORIENTED
+    int RT_BOT_CCW
+    int RT_BOT_CW
+
+    # BoT modes
+    int RT_BOT_SURFACE
+    int RT_BOT_SOLID
+    int RT_BOT_PLATE
+    int RT_BOT_PLATE_NOCOS
 
 cdef extern from "bu.h":
     struct bu_list:
         uint32_t magic
         bu_list *forw
         bu_list *back
+
+    struct bu_bitv:
+        bu_list l
+        size_t nbits
 
     void BU_LIST_INIT(bu_list *_hp)
 
@@ -71,7 +84,12 @@ cdef extern from "wdb.h":
         fastf_t radius)
     int mk_trc_h(rt_wdb *db, char *name, point_t base, vect_t height,
         fastf_t rad_base, fastf_t rad_top)
-    
+
+    int mk_bot(rt_wdb *db, char *name, unsigned char mode,
+        unsigned char orientation, unsigned char error_mode,
+        size_t num_vertices, size_t num_faces, fastf_t *vertices,
+        int *faces, fastf_t *thickness, bu_bitv *face_mode)
+
     wmember *mk_addmember(char *name, bu_list *headp, mat_t mat, int op)
 
     int mk_lcomb(rt_wdb *db, char *name, wmember *headp, int is_region,

@@ -114,6 +114,31 @@ cdef class WDB:
 
         _check_res(res)
 
+    def mk_bot(self, bytes name, vertices, faces, thicknesses=None,
+            thicknessModes=None, mode=c_brlcad.RT_BOT_SURFACE,
+            orientation=c_brlcad.RT_BOT_CCW):
+
+        assert thicknesses is None
+        assert thicknessModes is None
+
+        vertexPyArr = np.array(vertices, dtype='double')
+        facePyArr = np.array(faces, dtype='int')
+
+        assert len(vertexPyArr.shape) == 2 and vertexPyArr.shape[1] == 3
+        assert len(facePyArr.shape) == 2 and facePyArr.shape[1] == 3
+
+        cdef np.ndarray[c_brlcad.fastf_t, ndim=1] vertexArr = \
+            vertexPyArr.reshape(vertexPyArr.shape[0] * vertexPyArr.shape[1])
+
+        cdef np.ndarray[int, ndim=1] faceArr = \
+            facePyArr.reshape(facePyArr.shape[0] * facePyArr.shape[1])
+
+        res = c_brlcad.mk_bot(self.ptr, name, mode, orientation, 0,
+            len(vertices), len(faces), <c_brlcad.fastf_t*> vertexArr.data,
+            <int*> faceArr.data, NULL, NULL)
+
+        _check_res(res)
+
     def mk_lfcomb(self, bytes name, CombinationList lst, is_region=True):
         res = c_brlcad.mk_lfcomb(self.ptr, name, &lst.wm_head, is_region)
         _check_res(res)
