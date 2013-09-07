@@ -124,8 +124,11 @@ class CsgExpr(Expr):
 
     def eval(self, ctx):
         ctx.startCombination(self.opName)
-        self.block.exec_(ctx)
-        return ctx.endCombination()
+        
+        try:
+            self.block.exec_(ctx)
+        finally:
+            return ctx.endCombination()
 
 class MethodCallExpr(Expr):
     def __init__(self, expr, funcCallExpr):
