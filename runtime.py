@@ -133,6 +133,12 @@ class Sphere(BrlCadObject):
 
         ctx.wdb.mk_sph(self._name, [0,0,0], r)
 
+class Polyhedron(BrlCadObject):
+    def __init__(self, ctx, points, triangles):
+        BrlCadObject.__init__(self)
+
+        ctx.wdb.mk_bot(self._name, points, triangles)
+
 class Combination(BrlCadObject):
     OPS = {
             'add' : brlcad.CombinationList.UNION,
@@ -158,7 +164,7 @@ def _range(ctx, stop):
     return np.arange(stop)
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
-    [Cube, Cylinder, Sphere])
+    [Cube, Cylinder, Sphere, Polyhedron])
 
 builtins = dict((f.func_name, f) for f in [])
 builtins.update(_builtinClasses)
