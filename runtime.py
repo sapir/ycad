@@ -14,7 +14,7 @@ class ReturnException(BaseException):
 
 class Context:
     def __init__(self, outputFilename, dbTitle='ycad database'):
-        self.scope = {}
+        self.scopes = [builtins]
 
         defComb = Combination(self, op='add', name='main')
         self.combinations = [defComb]
@@ -35,21 +35,37 @@ class Context:
 
     def execProgram(self, parsedProgram):
         try:
+            self.pushScope()
+
             for stmt in parsedProgram:
                 stmt.exec_(self)
+
+            self.popScope()
 
         except ReturnException:
             raise RuntimeError("return from main scope!")
 
+    def pushScope(self):
+        self.scopes.append({})
+
+    def popScope(self):
+        return self.scopes.pop()
+
+    @property
+    def curScope(self):
+        return self.scopes[-1]
+
     def getVar(self, name):
-        try:
-            return self.scope[name]
-        except LookupError:
-            global builtins
-            return builtins[name]
+        for scope in reversed(self.scopes):
+            try:
+                return self.scope[name]
+            except LookupError:
+                continue
+
+        raise NameError("variable {0} not found".format(name))
 
     def setVar(self, name, value):
-        self.scope[name] = value
+        self.curScope[name] = value
 
     @property
     def curCombination(self):
