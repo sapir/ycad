@@ -60,7 +60,9 @@ block = surround("{}", ZeroOrMore(stmt)).setName("block")
 block.setParseAction(lambda s,loc,toks: BlockStmt(toks.asList()))
 
 
-varName = Word(alphas + "_", alphanums + "_").setName("variable name")
+identifier = Word(alphas + "_", alphanums + "_").setName("identifier")
+
+varName = identifier.copy()
 varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
 
 # TODO: attrAccess = varName + OneOrMore("." + varName)
