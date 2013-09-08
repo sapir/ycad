@@ -130,8 +130,11 @@ class CsgExpr(Expr):
         
         try:
             self.block.exec_(ctx)
-        finally:
-            return ctx.endCombination()
+        except ReturnException:
+            ctx.endCombination()
+            raise
+
+        return ctx.endCombination()
 
 class MethodCallExpr(Expr):
     def __init__(self, expr, funcCallExpr):
@@ -261,13 +264,11 @@ class FuncDefStmt(Stmt):
                 self.block.exec_(ctx)
 
             except ReturnException as e:
+                ctx.endCombination()
                 return e.value
 
-            finally:
-                comb = ctx.endCombination()
-
             # if haven't returned anything else, return the combination
-            return comb
+            return ctx.endCombination()
 
 
         func.func_name = self.funcName
