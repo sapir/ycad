@@ -33,6 +33,14 @@ class Context:
         self.wdb.close()
         self.wdb = None
 
+    def execProgram(self, parsedProgram):
+        try:
+            for stmt in parsedProgram:
+                stmt.exec_(self)
+
+        except ReturnException:
+            raise RuntimeError("return from main scope!")
+
     def getVar(self, name):
         try:
             return self.scope[name]
@@ -217,13 +225,6 @@ builtins['range'] = _range
 
 
 def run(parsedProgram, outputFilename):
-    try:
-        ctx = Context(outputFilename)
-
-        for stmt in parsedProgram:
-            stmt.exec_(ctx)
-
-        ctx.close()
-
-    except ReturnException:
-        raise RuntimeError("return from main program!")
+    ctx = Context(outputFilename)
+    ctx.execProgram(parsedProgram)
+    ctx.close()
