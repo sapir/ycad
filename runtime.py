@@ -57,12 +57,12 @@ class Context:
 
 
 _autoNameCounters = defaultdict(lambda: count(1))
-def _autoname(basename='obj'):
+def _autoname(basename):
     return '{0}.{1}'.format(basename, next(_autoNameCounters[basename]))
 
 class BrlCadObject(object):
-    def __init__(self, name=None):
-        self._name = _autoname() if name is None else name
+    def __init__(self, name=None, basename='obj'):
+        self._name = _autoname(basename) if name is None else name
         self._mat = np.identity(4)
 
     def _applyMatrix(self, ctx, mat):
