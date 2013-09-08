@@ -57,7 +57,7 @@ class Context:
 
 
 _autoNameCounters = defaultdict(lambda: count(1))
-def _autoname(basename='autoname'):
+def _autoname(basename='obj'):
     return '{0}.{1}'.format(basename, next(_autoNameCounters[basename]))
 
 class BrlCadObject(object):
