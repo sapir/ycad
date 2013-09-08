@@ -1,7 +1,0 @@
-func x() {
-    show cube(s=10mm)
-    return 5
-}
-
-show x()
-show x()
