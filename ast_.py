@@ -4,7 +4,7 @@ from __future__ import print_function, division
 from io import StringIO
 import operator
 import itertools
-from runtime import ReturnException
+from runtime import ReturnException, BrlCadObject
 
 
 class Expr(object):
@@ -186,7 +186,8 @@ class ExprStmt(Stmt):
 
     def exec_(self, ctx):
         val = self.expr.eval(ctx)
-        ctx.curCombination.add(val)
+        if isinstance(val, BrlCadObject):
+            ctx.curCombination.add(val)
 
 class IfStmt(Stmt):
     def __init__(self, condsAndBlocks, elseBlock=None):
