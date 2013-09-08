@@ -315,5 +315,6 @@ class ImportStmt(Stmt):
         moduleName = self.pkgPath[0]
         modulePath = moduleName + '.ycad'
         program = grammar.program.parseFile(modulePath)
-        module = ctx.execProgram(program)
+        module, moduleObj = ctx.execProgram(program,
+            moduleObjName='module.' + moduleName, asRegion=False)
         ctx.setVar(moduleName, module)

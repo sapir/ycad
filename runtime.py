@@ -15,9 +15,7 @@ class ReturnException(BaseException):
 class Context:
     def __init__(self, outputFilename, dbTitle='ycad database'):
         self.scopes = [builtins]
-
-        defComb = Combination(self, op='add', name='main')
-        self.combinations = [defComb]
+        self.combinations = []
 
         self.wdb = brlcad.wdb_fopen(outputFilename)
         self.wdb.mk_id(dbTitle)
@@ -27,20 +25,21 @@ class Context:
             self.close()
 
     def close(self):
-        # end default combination
-        self.endCombination(asRegion=True)
-
         self.wdb.close()
         self.wdb = None
 
-    def execProgram(self, parsedProgram):
+    def execProgram(self, parsedProgram, moduleObjName, asRegion):
         try:
             self.pushScope()
+            self.startCombination('add', name=moduleObjName)
 
             for stmt in parsedProgram:
                 stmt.exec_(self)
 
-            return self.popScope()
+            # end default combination
+            comb = self.endCombination(asRegion=asRegion)
+            scope = self.popScope()
+            return scope, comb
 
         except ReturnException:
             raise RuntimeError("return from main scope!")
@@ -71,8 +70,8 @@ class Context:
     def curCombination(self):
         return self.combinations[-1]
 
-    def startCombination(self, op):
-        self.combinations.append(Combination(self, op))
+    def startCombination(self, op, name=None):
+        self.combinations.append(Combination(self, op, name=name))
 
     def endCombination(self, asRegion=False):
         comb = self.combinations.pop()
@@ -242,5 +241,5 @@ builtins['range'] = _range
 
 def run(parsedProgram, outputFilename):
     ctx = Context(outputFilename)
-    ctx.execProgram(parsedProgram)
+    ctx.execProgram(parsedProgram, moduleObjName='main', asRegion=True)
     ctx.close()
