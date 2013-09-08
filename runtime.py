@@ -21,7 +21,7 @@ class Module(object):
 
 class Context:
     def __init__(self, outputFilename, dbTitle='ycad database'):
-        self.scopes = [builtins]
+        self.scopeChains = [[builtins]]
         self.combinations = []
 
         self.wdb = brlcad.wdb_fopen(outputFilename)
@@ -51,18 +51,28 @@ class Context:
         except ReturnException:
             raise RuntimeError("return from main scope!")
 
-    def pushScope(self):
-        self.scopes.append({})
-
-    def popScope(self):
-        return self.scopes.pop()
-
+    @property
+    def curScopeChain(self):
+        return self.scopeChains[-1]
+    
     @property
     def curScope(self):
-        return self.scopes[-1]
+        return self.curScopeChain[-1]
+
+    def pushScope(self, scopeChain=None):
+        if scopeChain is None:
+            scopeChain = self.curScopeChain + [{}]
+
+        self.scopeChains.append(scopeChain)
+
+    def popScope(self):
+        # pop current scope chain, and return the current scope
+        scope = self.curScope
+        self.scopeChains.pop()
+        return scope
 
     def getVar(self, name):
-        for scope in reversed(self.scopes):
+        for scope in reversed(self.curScopeChain):
             try:
                 return scope[name]
             except LookupError:
