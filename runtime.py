@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 from ast_ import ReturnException
 from itertools import count, chain
