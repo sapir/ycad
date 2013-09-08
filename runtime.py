@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from itertools import count, chain
+from collections import defaultdict
 import math
 import copy
 import numpy as np
@@ -55,9 +56,9 @@ class Context:
         return comb
 
 
-_autoNameCounter = count(1)
-def _autoname():
-    return 'autoname.{0}'.format(next(_autoNameCounter))
+_autoNameCounters = defaultdict(lambda: count(1))
+def _autoname(basename='autoname'):
+    return '{0}.{1}'.format(basename, next(_autoNameCounters[basename]))
 
 class BrlCadObject(object):
     def __init__(self, name=None):
