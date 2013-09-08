@@ -40,7 +40,7 @@ class Context:
             for stmt in parsedProgram:
                 stmt.exec_(self)
 
-            self.popScope()
+            return self.popScope()
 
         except ReturnException:
             raise RuntimeError("return from main scope!")
