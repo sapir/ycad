@@ -4,6 +4,7 @@ from __future__ import print_function, division
 from io import StringIO
 import operator
 import itertools
+import grammar
 from runtime import ReturnException, BrlCadObject
 
 
@@ -303,8 +304,16 @@ class ImportStmt(Stmt):
     def __init__(self, pkgPath):
         self.pkgPath = pkgPath
 
+        if len(pkgPath) > 1:
+            raise NotImplementedError
+
     def __repr__(self):
         return 'import {0}'.format('.'.join(pkgPath))
 
     def exec_(self, ctx):
-        print(self.pkgPath)
+        assert len(self.pkgPath) == 1
+        moduleName = self.pkgPath[0]
+        modulePath = moduleName + '.ycad'
+        program = grammar.program.parseFile(modulePath)
+        module = ctx.execProgram(program)
+        ctx.setVar(moduleName, module)
