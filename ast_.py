@@ -93,6 +93,7 @@ class BinaryOpExpr(Expr):
             '^' :  operator.pow,
             '*' :  operator.mul,
             '/' :  operator.div,
+            '%' :  operator.mod,
             '+' :  operator.add,
             '-' :  operator.sub,
             '<' :  operator.lt,

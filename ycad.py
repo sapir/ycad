@@ -128,7 +128,7 @@ mathExpr = operatorPrecedence(
     [
         ("^", 2, opAssoc.RIGHT, binaryOpParseAction),       # exponentiation
         ("-", 1, opAssoc.RIGHT, unaryOpParseAction),        # negation
-        (oneOf("* /"), 2, opAssoc.LEFT, binaryOpParseAction),
+        (oneOf("* / %"), 2, opAssoc.LEFT, binaryOpParseAction),
         (oneOf("+ -"), 2, opAssoc.LEFT, binaryOpParseAction),
         (oneOf("< <= == != > >="), 2, opAssoc.LEFT, compareOpParseAction),
         ("not", 1, opAssoc.RIGHT, unaryOpParseAction),      # boolean negation
