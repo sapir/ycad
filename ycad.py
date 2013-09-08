@@ -211,26 +211,31 @@ program.ignore(cStyleComment)
 if __name__ == '__main__':
     import sys
     import os
+    import argparse
     from subprocess import check_call
 
-    try:
-        filename, outputName = sys.argv[1:]
-    except:
-        filename, = sys.argv[1:]
-        outputName = os.path.splitext(filename)[0] + '.stl'
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename",
+        help="source file (usually ends with '.ycad')")
+    parser.add_argument("-o", "--output",
+        help="STL output filename. defaults to source file with .stl extension")
+    args = parser.parse_args()
 
+    if not args.output:
+        args.output = os.path.splitext(args.filename)[0] + '.stl'
+    
     dbName = 'temp.g'
 
     print('Parsing...', file=sys.stderr)
-    parsed = program.parseFile(filename)
+    parsed = program.parseFile(args.filename)
     print('Creating BRL-CAD database ({0})...'.format(dbName), file=sys.stderr)
     run(parsed, dbName)
 
-    print('Converting to STL...', file=sys.stderr)
+    print('Converting to STL ({0})...'.format(args.output), file=sys.stderr)
     check_call(['g-stl',
         '-b',          # binary STL
         '-a', '0.05',  # 0.05mm tolerance
-        '-o', outputName,
+        '-o', args.output,
         dbName,
         'main'])       # 'main' is name of main object in our DB
 
