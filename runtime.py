@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from itertools import count, chain
 from collections import defaultdict
 import math
@@ -237,8 +238,17 @@ class Combination(BrlCadObject):
         ctx.wdb.mk_lfcomb(self._name, self._objList, asRegion)
 
 
-def _range(ctx, stop):
-    return np.arange(stop)
+def wrapPythonFunc(func):
+    def wrapper(ctx, *args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+def _get(ctx, obj, idx):
+    try:
+        return obj[idx]
+    except TypeError:
+        return obj[int(idx)]
 
 def regPrism(ctx, sides, r, h):
     # TODO: use BRL-CAD's arbn primitive, much simpler
@@ -280,7 +290,12 @@ _builtinClasses = dict((c.__name__.lower(), c) for c in
 
 builtins = dict((f.func_name, f) for f in [regPrism])
 builtins.update(_builtinClasses)
-builtins['range'] = _range
+builtins['range'] = wrapPythonFunc(np.arange)
+builtins['len'] = wrapPythonFunc(len)
+builtins['floor'] = wrapPythonFunc(math.floor)
+builtins['sqrt'] = wrapPythonFunc(math.sqrt)
+builtins['get'] = _get
+builtins['print'] = wrapPythonFunc(print)
 
 
 def run(srcPath, parsedProgram, outputFilename):
