@@ -58,7 +58,8 @@ class Context:
 
 _autoNameCounters = defaultdict(lambda: count(1))
 def _autoname(basename):
-    return '{0}.{1}'.format(basename, next(_autoNameCounters[basename]))
+    counter = _autoNameCounters[basename]
+    return '{0}.{1}'.format(basename, next(counter))
 
 class BrlCadObject(object):
     def __init__(self, name=None, basename='obj'):
