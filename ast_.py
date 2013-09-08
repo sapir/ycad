@@ -4,6 +4,7 @@ from __future__ import print_function, division
 from io import StringIO
 import operator
 import itertools
+from runtime import ReturnException
 
 
 class Expr(object):
@@ -216,10 +217,6 @@ class IfStmt(Stmt):
         else:
             if self.elseBlock is not None:
                 self.elseBlock.exec_(ctx)
-
-class ReturnException(BaseException):
-    def __init__(self, value=None):
-        self.value = value
 
 class FuncDefStmt(Stmt):
     def __init__(self, funcName, paramsList, block):

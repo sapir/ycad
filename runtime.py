@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
-from ast_ import ReturnException
 from itertools import count, chain
 import math
 import numpy as np
 import brlcad
 
+
+class ReturnException(BaseException):
+    def __init__(self, value=None):
+        self.value = value
 
 class Context:
     def __init__(self, outputFilename, dbTitle='ycad database'):
