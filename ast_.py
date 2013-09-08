@@ -298,3 +298,13 @@ class ForStmt(Stmt):
         for i in iterable:
             ctx.setVar(self.lvalue, i)
             self.block.exec_(ctx)
+
+class ImportStmt(Stmt):
+    def __init__(self, pkgPath):
+        self.pkgPath = pkgPath
+
+    def __repr__(self):
+        return 'import {0}'.format('.'.join(pkgPath))
+
+    def exec_(self, ctx):
+        print(self.pkgPath)

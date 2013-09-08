@@ -200,8 +200,11 @@ part.setName("part statement")
 exprStmt = expr.copy().addParseAction(lambda s,loc,toks: ExprStmt(toks[0]))
 exprStmt.setName("expression statement")
 
+importStmt = Keyword("import").suppress() + delimitedList(identifier, delim='.')
+importStmt.setParseAction(lambda s,loc,toks: ImportStmt(toks.asList()))
+
 stmt << ~FollowedBy(Literal("}") | StringEnd()) + (block | funcDef
-    | assignment | simpleStmt | ifStmt | forStmt | part | exprStmt)
+    | assignment | simpleStmt | ifStmt | forStmt | part | importStmt | exprStmt)
 stmt.setName("statement")
 
 
