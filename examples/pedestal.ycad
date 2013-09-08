@@ -7,4 +7,5 @@ pedestal = add {
     base.move(z=3cm + 7cm)
 }
 
+# Display final object
 pedestal.rotate(45, [0,0,1])
