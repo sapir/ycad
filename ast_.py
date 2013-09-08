@@ -235,8 +235,15 @@ class FuncDefStmt(Stmt):
             .format(self, repr(self.block)))
 
     def exec_(self, ctx):
+        # create a new scope for the function
+        ctx.pushScope()
+        scopeChain = ctx.curScopeChain
+        ctx.popScope()
+
         def func(ctx, *args, **kwargs):
             assert len(args) + len(kwargs) <= self.paramsList, "Too many params!"
+
+            ctx.pushScope(scopeChain)
 
             paramsIter = iter(self.paramsList)
             
@@ -266,6 +273,9 @@ class FuncDefStmt(Stmt):
             except ReturnException as e:
                 ctx.endCombination()
                 return e.value
+
+            finally:
+                ctx.popScope()
 
             # if haven't returned anything else, return the combination
             return ctx.endCombination()
