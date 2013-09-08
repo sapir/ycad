@@ -58,7 +58,7 @@ class Context:
     def getVar(self, name):
         for scope in reversed(self.scopes):
             try:
-                return self.scope[name]
+                return scope[name]
             except LookupError:
                 continue
 
