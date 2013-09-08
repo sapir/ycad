@@ -2,6 +2,7 @@
 
 from itertools import count, chain
 import math
+import copy
 import numpy as np
 import brlcad
 
@@ -64,8 +65,14 @@ class BrlCadObject(object):
         self._mat = np.identity(4)
 
     def _applyMatrix(self, ctx, mat):
+        # switching to the commented line will break withMatrix():
         # ctx.wdb.apply_mat(self._name, mat)
         self._mat = np.dot(mat, self._mat)
+
+    def withMatrix(self, ctx, mat):
+        newObj = copy.copy(self)
+        newObj._applyMatrix(ctx, mat)
+        return newObj
 
     def move(self, ctx, vec=None, x=0, y=0, z=0):
         if vec is None:
@@ -73,8 +80,7 @@ class BrlCadObject(object):
 
         mat = np.identity(4)
         brlcad.set_mat_deltas(mat, *vec)
-        self._applyMatrix(ctx, mat)
-        return self
+        return self.withMatrix(ctx, mat)
 
     def scale(self, ctx, vec=None, x=1, y=1, z=1):
         if vec is None:
@@ -82,14 +88,12 @@ class BrlCadObject(object):
 
         mat = np.identity(4)
         brlcad.set_mat_scale(mat, x, y, z)
-        self._applyMatrix(ctx, mat)
-        return self
+        return self.withMatrix(ctx, mat)
 
     def rotate(self, ctx, angle, axis):
         mat = np.identity(4)
         brlcad.rotate_mat(mat, axis, np.deg2rad(angle))
-        self._applyMatrix(ctx, mat)
-        return self
+        return self.withMatrix(ctx, mat)
 
 class Cube(BrlCadObject):
     def __init__(self, ctx, s):
