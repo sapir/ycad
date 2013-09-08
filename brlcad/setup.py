@@ -20,6 +20,10 @@ setup(
                 os.path.join(BRLCAD_DIR, 'lib'),
             ],
 
+            runtime_library_dirs=[
+                os.path.join(BRLCAD_DIR, 'lib'),
+            ],
+
             libraries=['bu', 'rt', 'wdb', 'm'],
         ),
     ]
