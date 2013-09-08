@@ -5,7 +5,7 @@ from io import StringIO
 import operator
 import itertools
 import grammar
-from runtime import ReturnException, BrlCadObject
+from runtime import ReturnException, Module, BrlCadObject
 
 
 class Expr(object):
@@ -316,6 +316,7 @@ class ImportStmt(Stmt):
         moduleName = self.pkgPath[0]
         modulePath = moduleName + '.ycad'
         program = grammar.program.parseFile(modulePath)
-        module, moduleObj = ctx.execProgram(program,
+        scope, moduleObj = ctx.execProgram(program,
             moduleObjName='module.' + moduleName, asRegion=False)
+        module = Module(scope)
         ctx.setVar(moduleName, module)
