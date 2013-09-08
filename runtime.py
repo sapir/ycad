@@ -12,6 +12,13 @@ class ReturnException(BaseException):
     def __init__(self, value=None):
         self.value = value
 
+class Module(object):
+    def __init__(self, scope):
+        self.scope = scope
+
+    def __getattr__(self, name):
+        return self.scope[name]
+
 class Context:
     def __init__(self, outputFilename, dbTitle='ycad database'):
         self.scopes = [builtins]
