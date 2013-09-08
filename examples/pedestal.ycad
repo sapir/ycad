@@ -1,0 +1,10 @@
+base = cube([10cm, 10cm, 3cm])
+    .move(x=-5cm, y=-5cm)
+
+pedestal = add {
+    base
+    cylinder(d=8cm, h=7cm).move(z=3cm)
+    base.move(z=3cm + 7cm)
+}
+
+pedestal.rotate(45, [0,0,1])
