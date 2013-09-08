@@ -98,7 +98,7 @@ class BrlCadObject(object):
 
 class Cube(BrlCadObject):
     def __init__(self, ctx, s):
-        BrlCadObject.__init__(self)
+        BrlCadObject.__init__(self, basename='cube')
 
         self.s = s
 
@@ -111,7 +111,7 @@ class Cylinder(BrlCadObject):
     def __init__(self, ctx, h, d=None, d1=None, d2=None, r=None,
             r1=None, r2=None, center=False):
 
-        BrlCadObject.__init__(self)
+        BrlCadObject.__init__(self, basename='cylinder')
 
         if r is not None: d = r * 2
         if r1 is not None: d1 = r1 * 2
@@ -133,7 +133,7 @@ class Cylinder(BrlCadObject):
 
 class Sphere(BrlCadObject):
     def __init__(self, ctx, r=None, d=None):
-        BrlCadObject.__init__(self)
+        BrlCadObject.__init__(self, basename='sphere')
 
         if d is not None:
             r = d / 2.
@@ -144,7 +144,7 @@ class Sphere(BrlCadObject):
 
 class Polyhedron(BrlCadObject):
     def __init__(self, ctx, points, triangles):
-        BrlCadObject.__init__(self)
+        BrlCadObject.__init__(self, basename='polyhedron')
 
         ctx.wdb.mk_bot(self._name, points, triangles)
 
@@ -156,7 +156,7 @@ class Combination(BrlCadObject):
         }
 
     def __init__(self, ctx, op, name=None):
-        BrlCadObject.__init__(self, name=name)
+        BrlCadObject.__init__(self, name=name, basename='comb')
         self.op = op
 
         self._objList = brlcad.CombinationList()
