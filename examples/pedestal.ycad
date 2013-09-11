@@ -8,4 +8,4 @@ pedestal = add {
 }
 
 # Display final object
-pedestal.rotate(45, [0,0,1])
+pedestal.rotate(z=45)
