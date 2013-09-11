@@ -146,7 +146,20 @@ class BrlCadObject(object):
         brlcad.set_mat_scale(mat, x, y, z)
         return self.withMatrix(ctx, mat)
 
-    def rotate(self, ctx, angle, axis):
+    def rotate(self, ctx, angle=None, axis=None, x=None, y=None, z=None):
+        assert ((angle is not None and axis is not None)
+            ^ (x is not None) ^ (y is not None) ^ (z is not None))
+
+        if x is not None:
+            angle = x
+            axis = [1, 0, 0]
+        elif y is not None:
+            angle = y
+            axis = [0, 1, 0]
+        elif z is not None:
+            angle = z
+            axis = [0, 0, 1]
+
         mat = np.identity(4)
         brlcad.rotate_mat(mat, axis, np.deg2rad(angle))
         return self.withMatrix(ctx, mat)
