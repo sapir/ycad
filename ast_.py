@@ -323,10 +323,20 @@ class ImportStmt(Stmt):
 
     def exec_(self, ctx):
         assert len(self.pkgPath) == 1
+        
         moduleName = self.pkgPath[0]
+        
+        try:
+            return ctx.modules[moduleName]
+        except KeyError:
+            pass
+
         modulePath = ctx.findModuleInPath(moduleName)
         program = grammar.program.parseFile(modulePath)
         scope, moduleObj = ctx.execProgram(modulePath, program,
             moduleObjName='module.' + moduleName, asRegion=False)
         module = Module(scope)
         ctx.setVar(moduleName, module)
+        
+        # cache for next time
+        ctx.modules[moduleName] = module

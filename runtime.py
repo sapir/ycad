@@ -28,6 +28,8 @@ class Context:
         self.wdb = brlcad.wdb_fopen(outputFilename)
         self.wdb.mk_id(dbTitle)
 
+        self.modules = {}
+
     def __del__(self):
         if self.wdb is not None:
             self.close()
