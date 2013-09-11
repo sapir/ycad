@@ -26,7 +26,7 @@ if __name__ == '__main__':
     print('Parsing...', file=sys.stderr)
     parsed = grammar.program.parseFile(args.filename)
     print('Creating BRL-CAD database ({0})...'.format(dbName), file=sys.stderr)
-    runtime.run(parsed, dbName)
+    runtime.run(os.path.abspath(args.filename), parsed, dbName)
 
     print('Converting to STL ({0})...'.format(args.output), file=sys.stderr)
     check_call(['g-stl',

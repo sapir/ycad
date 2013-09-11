@@ -4,6 +4,7 @@ from itertools import count, chain
 from collections import defaultdict
 import math
 import copy
+import os
 import numpy as np
 import brlcad
 
@@ -35,10 +36,11 @@ class Context:
         self.wdb.close()
         self.wdb = None
 
-    def execProgram(self, parsedProgram, moduleObjName, asRegion):
+    def execProgram(self, srcPath, parsedProgram, moduleObjName, asRegion):
         try:
             self.pushScope()
             self.startCombination('add', name=moduleObjName)
+            self.setVar('__path', [os.path.dirname(srcPath)])
 
             for stmt in parsedProgram:
                 stmt.exec_(self)
@@ -94,6 +96,16 @@ class Context:
         comb = self.combinations.pop()
         comb.make(self, asRegion=asRegion)
         return comb
+
+    def findModuleInPath(self, moduleName):
+        exts = ['.ycad']
+        for dirname in self.getVar('__path'):
+            for ext in exts:
+                path = os.path.join(dirname, moduleName + ext)
+                if os.path.isfile(path):
+                    return path
+
+        raise ValueError("Module '{0}' not found!".format(moduleName))
 
 
 _autoNameCounters = defaultdict(lambda: count(1))
@@ -256,7 +268,7 @@ builtins.update(_builtinClasses)
 builtins['range'] = _range
 
 
-def run(parsedProgram, outputFilename):
+def run(srcPath, parsedProgram, outputFilename):
     ctx = Context(outputFilename)
-    ctx.execProgram(parsedProgram, moduleObjName='main', asRegion=True)
+    ctx.execProgram(srcPath, parsedProgram, moduleObjName='main', asRegion=True)
     ctx.close()
