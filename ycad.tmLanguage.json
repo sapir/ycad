@@ -1,0 +1,63 @@
+{   "name": "ycad",
+    "scopeName": "source.ycad",
+    "fileTypes": ["ycad"],
+    "patterns": [
+        {
+            "captures": {
+                "1": {
+                    "name": "punctuation.definition.comment.ycad"
+                }
+            },
+            "match": "(#).*$\\n?",
+            "name": "comment.line.number-sign.ycad"
+        },
+
+        {   "match" : "[0-9]+(?:\\.[0-9]+)?(mm|cm|m|inch)?",
+            "name" : "constant.numeric.ycad",
+            "captures" : {
+                "1" : { "name" : "keyword.source.ycad" },
+            },
+            "comment" : "Numeric value"
+        },
+
+        {   "match" : "\\bfunc\\b",
+            "name" : "storage.type.function.ycad",
+            "comment" : "ycad keyword",
+        },
+
+        {   "match" : "\\bpart\\b",
+            "name" : "storage.type.part.ycad",
+            "comment" : "ycad keyword",
+        },
+
+        {   "match" : "\\b(true|false|return|if|else|for|in|import)\\b",
+            "name" : "keyword.source.ycad",
+            "comment" : "ycad keyword",
+        },
+
+        {   "match" : "\\b(cube|sphere|cylinder|move|rotate|scale)\\b",
+            "name" : "support.function.runtime.ycad",
+            "comment" : "built-in function",
+        },
+
+        {   "match" : "\\b(add|sub|mul)\\b",
+            "name" : "support.function.csg.ycad",
+            "comment" : "csg block",
+        },
+
+        {   "match": "[A-Za-z][A-Za-z0-9_]+(?=\\()",
+            "name": "entity.name.function.ycad",
+            "comment" : "name of a function in a function call or definition",
+        },
+
+        {   "match": "[A-Za-z][A-Za-z0-9_]+",
+            "name": "variable.ycad",
+            "comment": "Variables like $PARAM1, $TM_SELECTION..."
+        },
+
+        {   "match" : "[\\[\\]\\(\\){}]",
+            "name" : "punctuation.ycad",
+        },
+    ],
+    "uuid": "791d1ef1-8366-4ecb-88e5-228e8c3a17b2"
+}
