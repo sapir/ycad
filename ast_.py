@@ -246,7 +246,7 @@ class FuncDefStmt(Stmt):
             ctx.pushScope(scopeChain)
 
             paramsIter = iter(self.paramsList)
-            
+
             # put args first in zip() so that when args ends before paramsIter,
             # we don't accidentally consume an extra param from paramsIter
             for arg, (name, _) in zip(args, paramsIter):
@@ -260,8 +260,12 @@ class FuncDefStmt(Stmt):
 
             for name, default in namedParamsLeft.iteritems():
                 # default is a parsed expression, or None if no default value
-                if default is not None:
-                    ctx.setVar(name, default.eval(ctx))
+                if default is None:
+                    raise ValueError(
+                        "Parameter '{0}' got no value in call to func {1}!"
+                        .format(name, self.funcName))
+
+                ctx.setVar(name, default.eval(ctx))
 
             
             # default combination for function
@@ -337,6 +341,6 @@ class ImportStmt(Stmt):
             moduleObjName='module.' + moduleName, asRegion=False)
         module = Module(scope)
         ctx.setVar(moduleName, module)
-        
+
         # cache for next time
         ctx.modules[moduleName] = module
