@@ -3,7 +3,7 @@
 from __future__ import print_function
 from itertools import count, chain
 from collections import defaultdict
-import math
+from math import *
 import copy
 import os
 import numpy as np
@@ -256,10 +256,10 @@ def regPrism(ctx, sides, r, h):
     sides = int(sides)
 
     # angle to each of the vertices around the center
-    angles = [i*2*math.pi/sides for i in xrange(sides)]
+    angles = [i*2*pi/sides for i in xrange(sides)]
 
     origin = [0,0,0]
-    bottomVertices = [[math.cos(a) * r, math.sin(a) * r, 0]
+    bottomVertices = [[cos(a) * r, sin(a) * r, 0]
         for a in angles] + [origin]
     topVertices = [(x,y,z+h) for (x,y,z) in bottomVertices]
 
@@ -292,8 +292,8 @@ builtins = dict((f.func_name, f) for f in [regPrism])
 builtins.update(_builtinClasses)
 builtins['range'] = wrapPythonFunc(np.arange)
 builtins['len'] = wrapPythonFunc(len)
-builtins['floor'] = wrapPythonFunc(math.floor)
-builtins['sqrt'] = wrapPythonFunc(math.sqrt)
+builtins['floor'] = wrapPythonFunc(floor)
+builtins['sqrt'] = wrapPythonFunc(sqrt)
 builtins['get'] = _get
 builtins['print'] = wrapPythonFunc(print)
 
