@@ -68,7 +68,7 @@
 			<key>comment</key>
 			<string>built-in function</string>
 			<key>match</key>
-			<string>\b(cube|sphere|cylinder|move|rotate|scale)\b</string>
+			<string>\b(move|rotate|scale)\b</string>
 			<key>name</key>
 			<string>support.function.runtime.ycad</string>
 		</dict>
@@ -90,7 +90,7 @@
 		</dict>
 		<dict>
 			<key>comment</key>
-			<string>Variables like $PARAM1, $TM_SELECTION...</string>
+			<string>variables</string>
 			<key>match</key>
 			<string>[A-Za-z][A-Za-z0-9_]+</string>
 			<key>name</key>

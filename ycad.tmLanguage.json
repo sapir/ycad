@@ -35,7 +35,7 @@
             "comment" : "ycad keyword",
         },
 
-        {   "match" : "\\b(cube|sphere|cylinder|move|rotate|scale)\\b",
+        {   "match" : "\\b(move|rotate|scale)\\b",
             "name" : "support.function.runtime.ycad",
             "comment" : "built-in function",
         },
@@ -52,7 +52,7 @@
 
         {   "match": "[A-Za-z][A-Za-z0-9_]+",
             "name": "variable.ycad",
-            "comment": "Variables like $PARAM1, $TM_SELECTION..."
+            "comment": "variables",
         },
 
         {   "match" : "[\\[\\]\\(\\){}]",
