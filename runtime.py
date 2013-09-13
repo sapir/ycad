@@ -238,12 +238,6 @@ class Combination(BrlCadObject):
         ctx.wdb.mk_lfcomb(self._name, self._objList, asRegion)
 
 
-def wrapPythonFunc(func):
-    def wrapper(ctx, *args, **kwargs):
-        return func(*args, **kwargs)
-
-    return wrapper
-
 def regPrism(ctx, sides, r, h):
     # TODO: use BRL-CAD's arbn primitive, much simpler
     assert sides == int(sides)
@@ -277,6 +271,14 @@ def regPrism(ctx, sides, r, h):
     faces = bottomFaces + topFaces + connectingFaces1 + connectingFaces2
 
     return Polyhedron(ctx, points=vertices, triangles=faces)
+
+
+def wrapPythonFunc(func):
+    def wrapper(ctx, *args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
 
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
