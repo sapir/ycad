@@ -244,12 +244,6 @@ def wrapPythonFunc(func):
 
     return wrapper
 
-def _get(ctx, obj, idx):
-    try:
-        return obj[idx]
-    except TypeError:
-        return obj[int(idx)]
-
 def regPrism(ctx, sides, r, h):
     # TODO: use BRL-CAD's arbn primitive, much simpler
     assert sides == int(sides)
@@ -294,7 +288,6 @@ builtins['range'] = wrapPythonFunc(np.arange)
 builtins['len'] = wrapPythonFunc(len)
 builtins['floor'] = wrapPythonFunc(floor)
 builtins['sqrt'] = wrapPythonFunc(sqrt)
-builtins['get'] = _get
 builtins['print'] = wrapPythonFunc(print)
 
 
