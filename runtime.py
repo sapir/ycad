@@ -319,7 +319,7 @@ _pow = wrapPythonFunc(pow)
 _round = wrapPythonFunc(round)
 
 def _sign(ctx, n):
-    return copysign(1, n)
+    return 0 if n == 0 else copysign(1, n)
 
 _sqrt = wrapPythonFunc(sqrt)
 
