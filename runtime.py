@@ -279,12 +279,33 @@ def wrapPythonFunc(func):
 
     return wrapper
 
+def _cos(ctx, n):
+    return cos(radians(n))
+
+def _sin(ctx, n):
+    return sin(radians(n))
+
+def _tan(ctx, n):
+    return tan(radians(n))
+
+def _acos(ctx, n):
+    return degrees(acos(n))
+
+def _asin(ctx, n):
+    return degrees(asin(n))
+
+def _atan(ctx, n):
+    return degrees(atan(n))
+
+def _atan2(ctx, x, y):
+    return degrees(atan2(x, y))
 
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
     [Cube, Cylinder, Sphere, Polyhedron])
 
-builtins = dict((f.func_name, f) for f in [regPrism])
+builtins = dict((f.func_name.lstrip('_'), f)
+    for f in [regPrism, _cos, _sin, _tan, _acos, _asin, _atan, _atan2])
 builtins.update(_builtinClasses)
 builtins['range'] = wrapPythonFunc(np.arange)
 builtins['len'] = wrapPythonFunc(len)
