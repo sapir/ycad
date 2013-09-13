@@ -279,6 +279,11 @@ def wrapPythonFunc(func):
 
     return wrapper
 
+_print = wrapPythonFunc(print)
+_range = wrapPythonFunc(np.arange)
+
+# OpenSCAD equivalent functions:
+
 def _cos(ctx, n):
     return cos(radians(n))
 
@@ -300,18 +305,36 @@ def _atan(ctx, n):
 def _atan2(ctx, x, y):
     return degrees(atan2(x, y))
 
+_abs = wrapPythonFunc(abs)
+_ceil = wrapPythonFunc(ceil)
+_exp = wrapPythonFunc(exp)
+_floor = wrapPythonFunc(floor)
+_ln = wrapPythonFunc(log)
+_len = wrapPythonFunc(len)
+_log = wrapPythonFunc(log10)
+_max = wrapPythonFunc(max)
+_min = wrapPythonFunc(min)
+_norm = wrapPythonFunc(np.linalg.norm)
+_pow = wrapPythonFunc(pow)
+_round = wrapPythonFunc(round)
+
+def _sign(ctx, n):
+    return copysign(1, n)
+
+_sqrt = wrapPythonFunc(sqrt)
+
+# Missing OpenSCAD functions: lookup, rands, str, search, import
+
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
     [Cube, Cylinder, Sphere, Polyhedron])
 
 builtins = dict((f.func_name.lstrip('_'), f)
-    for f in [regPrism, _cos, _sin, _tan, _acos, _asin, _atan, _atan2])
+    for f in [regPrism, _print, _range,
+        _cos, _sin, _tan, _acos, _asin, _atan, _atan2,
+        _abs, _ceil, _exp, _floor, _ln, _len, _log, _max, _min, _norm,
+        _pow, _round, _sign, _sqrt])
 builtins.update(_builtinClasses)
-builtins['range'] = wrapPythonFunc(np.arange)
-builtins['len'] = wrapPythonFunc(len)
-builtins['floor'] = wrapPythonFunc(floor)
-builtins['sqrt'] = wrapPythonFunc(sqrt)
-builtins['print'] = wrapPythonFunc(print)
 
 
 def run(srcPath, parsedProgram, outputFilename):
