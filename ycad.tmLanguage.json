@@ -45,12 +45,12 @@
             "comment" : "csg block",
         },
 
-        {   "match": "[A-Za-z][A-Za-z0-9_]+(?=\\()",
+        {   "match": "[A-Za-z][A-Za-z0-9_]*(?=\\()",
             "name": "entity.name.function.ycad",
             "comment" : "name of a function in a function call or definition",
         },
 
-        {   "match": "[A-Za-z][A-Za-z0-9_]+",
+        {   "match": "[A-Za-z][A-Za-z0-9_]*",
             "name": "variable.ycad",
             "comment": "variables",
         },

@@ -84,7 +84,7 @@
 			<key>comment</key>
 			<string>name of a function in a function call or definition</string>
 			<key>match</key>
-			<string>[A-Za-z][A-Za-z0-9_]+(?=\()</string>
+			<string>[A-Za-z][A-Za-z0-9_]*(?=\()</string>
 			<key>name</key>
 			<string>entity.name.function.ycad</string>
 		</dict>
@@ -92,7 +92,7 @@
 			<key>comment</key>
 			<string>variables</string>
 			<key>match</key>
-			<string>[A-Za-z][A-Za-z0-9_]+</string>
+			<string>[A-Za-z][A-Za-z0-9_]*</string>
 			<key>name</key>
 			<string>variable.ycad</string>
 		</dict>
