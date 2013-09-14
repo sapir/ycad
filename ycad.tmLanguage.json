@@ -20,9 +20,14 @@
             "comment" : "Numeric value"
         },
 
-        {   "match" : "\\bfunc\\b",
+        {   "match" : "\\bfunc\\s+([A-Za-z][A-Za-z0-9_]*)\\b",
             "name" : "storage.type.function.ycad",
-            "comment" : "ycad keyword",
+            "comment" : "ycad function definition",
+            "captures" : {
+                "1" : {
+                    "name": "entity.name.function.ycad",
+                },
+            },
         },
 
         {   "match" : "\\bpart\\b",
@@ -43,11 +48,6 @@
         {   "match" : "\\b(add|sub|mul)\\b",
             "name" : "support.function.csg.ycad",
             "comment" : "csg block",
-        },
-
-        {   "match": "[A-Za-z][A-Za-z0-9_]*(?=\\()",
-            "name": "entity.name.function.ycad",
-            "comment" : "name of a function in a function call or definition",
         },
 
         {   "match": "[A-Za-z][A-Za-z0-9_]*",

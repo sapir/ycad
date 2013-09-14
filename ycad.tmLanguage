@@ -41,10 +41,18 @@
 			<string>constant.numeric.ycad</string>
 		</dict>
 		<dict>
+			<key>captures</key>
+			<dict>
+				<key>1</key>
+				<dict>
+					<key>name</key>
+					<string>entity.name.function.ycad</string>
+				</dict>
+			</dict>
 			<key>comment</key>
-			<string>ycad keyword</string>
+			<string>ycad function definition</string>
 			<key>match</key>
-			<string>\bfunc\b</string>
+			<string>\bfunc\s+([A-Za-z][A-Za-z0-9_]*)\b</string>
 			<key>name</key>
 			<string>storage.type.function.ycad</string>
 		</dict>
@@ -79,14 +87,6 @@
 			<string>\b(add|sub|mul)\b</string>
 			<key>name</key>
 			<string>support.function.csg.ycad</string>
-		</dict>
-		<dict>
-			<key>comment</key>
-			<string>name of a function in a function call or definition</string>
-			<key>match</key>
-			<string>[A-Za-z][A-Za-z0-9_]*(?=\()</string>
-			<key>name</key>
-			<string>entity.name.function.ycad</string>
 		</dict>
 		<dict>
 			<key>comment</key>
