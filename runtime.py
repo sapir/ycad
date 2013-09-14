@@ -191,14 +191,18 @@ class Cylinder(BrlCadObject):
         assert d1 is None or isinstance(d1, float)
         assert d2 is None or isinstance(d2, float)
         assert (d is not None) ^ (d1 is not None and d2 is not None)
-        
-        if d is not None:
-            ctx.wdb.mk_rcc(self._name, [0,0,0], [0,0,h], d/2.)
-        elif d1 is not None and d2 is not None:
-            ctx.wdb.mk_trc_h(self._name, [0,0,0], [0,0,h], d1/2., d2/2.)
 
         if center:
-            self.move(ctx, z=-h/2)
+            z1 = -h / 2.
+            z2 = h / 2.
+        else:
+            z1 = 0
+            z2 = h
+        
+        if d is not None:
+            ctx.wdb.mk_rcc(self._name, [0,0,z1], [0,0,z2], d/2.)
+        elif d1 is not None and d2 is not None:
+            ctx.wdb.mk_trc_h(self._name, [0,0,z1], [0,0,z2], d1/2., d2/2.)
 
 class Sphere(BrlCadObject):
     def __init__(self, ctx, r=None, d=None):
