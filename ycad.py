@@ -4,6 +4,7 @@ from __future__ import absolute_import, print_function
 import sys
 import os
 import argparse
+import time
 from subprocess import check_call
 
 import grammar
@@ -23,10 +24,17 @@ if __name__ == '__main__':
     
     dbName = 'temp.g'
 
+    startTime = time.time()
+
     print('Parsing...', file=sys.stderr)
     parsed = grammar.program.parseFile(args.filename)
+    timeAfterParsing = time.time()
+    print('Parse time: {0:.2f}s'.format(timeAfterParsing - startTime))
+
     print('Creating BRL-CAD database ({0})...'.format(dbName), file=sys.stderr)
     runtime.run(os.path.abspath(args.filename), parsed, dbName)
+    timeAfterRunning = time.time()
+    print('Execution time: {0:.2f}s'.format(timeAfterRunning - timeAfterParsing))
 
     print('Converting to STL ({0})...'.format(args.output), file=sys.stderr)
     check_call(['g-stl',
@@ -36,4 +44,6 @@ if __name__ == '__main__':
         dbName,
         'main'])       # 'main' is name of main object in our DB
 
-    print('OK!', file=sys.stderr)
+    endTime = time.time()
+    print('Conversion time: {0:.2f}s'.format(endTime - timeAfterRunning))
+    print('Total time: {0:.2f}s'.format(endTime - startTime))
