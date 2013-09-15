@@ -252,6 +252,9 @@ class Combination(BrlCadObject):
         self._brepList.append(obj.brep)
 
     def make(self, ctx, asRegion):
+        if not self._brepList:
+            return
+
         self.brep = reduce(
             lambda a, b: self._opClass(a.Shape(), b.Shape()),
             self._brepList)
