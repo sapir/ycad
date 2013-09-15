@@ -124,9 +124,9 @@ class BrlCadObject(object):
     def __init__(self, name=None, basename='obj'):
         self._name = _autoname(basename) if name is None else name
 
-    def withTransform(self, transform):
+    def withTransform(self, transform, apiClass=BRepBuilderAPI_Transform):
         newObj = copy.copy(self)
-        newObj.brep = BRepBuilderAPI_Transform(self.brep.Shape(), transform, True)
+        newObj.brep = apiClass(self.brep.Shape(), transform, True)
         return newObj
 
     def move(self, ctx, vec=None, x=0, y=0, z=0):
@@ -138,12 +138,16 @@ class BrlCadObject(object):
         return self.withTransform(transform)
 
     def scale(self, ctx, vec=None, x=1, y=1, z=1):
-        if vec is None:
-            vec = [x,y,z]
+        if vec is not None:
+            x, y, z = vec
 
-        mat = np.identity(4)
-        brlcad.set_mat_scale(mat, x, y, z)
-        return self.withMatrix(ctx, mat)
+        transform = gp_GTrsf(
+            gp_Mat(
+                x, 0, 0,
+                0, y, 0,
+                0, 0, z),
+            gp_XYZ())
+        return self.withTransform(transform, apiClass=BRepBuilderAPI_GTransform)
 
     def rotate(self, ctx, angle=None, axis=None, x=None, y=None, z=None):
         assert ((angle is not None and axis is not None)
