@@ -206,21 +206,15 @@ class Cylinder(BrlCadObject):
         assert d2 is None or isinstance(d2, float)
         assert (d is not None) ^ (d1 is not None and d2 is not None)
 
-        if center:
-            z1 = -h / 2.
-            z2 = h / 2.
-        else:
-            z1 = 0
-            z2 = h
-        
         if d is not None:
             self.brep = BRepPrimAPI_MakeCylinder(d/2., h)
         else:
             self.brep = BRepPrimAPI_MakeCone(d1/2., d2/2., h)
-        # if d is not None:
-        #     ctx.wdb.mk_rcc(self._name, [0,0,z1], [0,0,z2], d/2.)
-        # elif d1 is not None and d2 is not None:
-        #     ctx.wdb.mk_trc_h(self._name, [0,0,z1], [0,0,z2], d1/2., d2/2.)
+
+        if center:
+            transform = gp_Trsf()
+            transform.SetTranslation(gp_Vec(0, 0, -h/2.))
+            self.applyTransform(transform)
 
 class Sphere(BrlCadObject):
     def __init__(self, ctx, r=None, d=None):
