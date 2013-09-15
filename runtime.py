@@ -160,7 +160,7 @@ class BrlCadObject(object):
         gpAxis = gp_Ax1(gp_Pnt(), gp_Dir(*axis))
 
         transform = gp_Trsf()
-        transform.SetRotation(gpAxis, angle)
+        transform.SetRotation(gpAxis, radians(angle))
         return self.withTransform(transform)
 
 class Cube(BrlCadObject):
