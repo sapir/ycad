@@ -225,7 +225,7 @@ class Sphere(BrlCadObject):
 
         assert isinstance(r, float)
 
-        ctx.wdb.mk_sph(self._name, [0,0,0], r)
+        self.brep = BRepPrimAPI_MakeSphere(r)
 
 class Polyhedron(BrlCadObject):
     def __init__(self, ctx, points, triangles):
