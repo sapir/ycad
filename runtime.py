@@ -124,9 +124,14 @@ class BrlCadObject(object):
     def __init__(self, name=None, basename='obj'):
         self._name = _autoname(basename) if name is None else name
 
+    def applyTransform(self, transform, apiClass=BRepBuilderAPI_Transform,
+            copy=False):
+
+        self.brep = apiClass(self.brep.Shape(), transform, copy)
+
     def withTransform(self, transform, apiClass=BRepBuilderAPI_Transform):
         newObj = copy.copy(self)
-        newObj.brep = apiClass(self.brep.Shape(), transform, True)
+        newObj.applyTransform(transform, apiClass, copy=True)
         return newObj
 
     def move(self, ctx, vec=None, x=0, y=0, z=0):
