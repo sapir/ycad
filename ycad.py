@@ -22,8 +22,6 @@ if __name__ == '__main__':
     if not args.output:
         args.output = os.path.splitext(args.filename)[0] + '.stl'
     
-    dbName = 'temp.g'
-
     startTime = time.time()
 
     print('Parsing...', file=sys.stderr)
@@ -31,19 +29,9 @@ if __name__ == '__main__':
     timeAfterParsing = time.time()
     print('Parse time: {0:.2f}s'.format(timeAfterParsing - startTime))
 
-    print('Creating BRL-CAD database ({0})...'.format(dbName), file=sys.stderr)
-    runtime.run(os.path.abspath(args.filename), parsed, dbName)
-    timeAfterRunning = time.time()
-    print('Execution time: {0:.2f}s'.format(timeAfterRunning - timeAfterParsing))
-
-    print('Converting to STL ({0})...'.format(args.output), file=sys.stderr)
-    check_call(['g-stl',
-        '-b',          # binary STL
-        '-a', '0.05',  # 0.05mm tolerance
-        '-o', args.output,
-        dbName,
-        'main'])       # 'main' is name of main object in our DB
-
+    print('Running...', file=sys.stderr)
+    runtime.run(os.path.abspath(args.filename), parsed, args.output)
     endTime = time.time()
-    print('Conversion time: {0:.2f}s'.format(endTime - timeAfterRunning))
+    
+    print('Execution time: {0:.2f}s'.format(endTime - timeAfterParsing))
     print('Total time: {0:.2f}s'.format(endTime - startTime))

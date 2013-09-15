@@ -7,7 +7,10 @@ from math import *
 import copy
 import os
 import numpy as np
-import brlcad
+from OCC.BRepPrimAPI import (BRepPrimAPI_MakeBox, BRepPrimAPI_MakeCylinder,
+    BRepPrimAPI_MakeCone)
+from OCC.BRepAlgoAPI import BRepAlgoAPI_Cut
+from OCC.StlAPI import StlAPI_Writer
 
 
 class ReturnException(BaseException):
@@ -26,18 +29,18 @@ class Context:
         self.scopeChains = [[builtins]]
         self.combinations = []
 
-        self.wdb = brlcad.wdb_fopen(outputFilename)
-        self.wdb.mk_id(dbTitle)
+        # self.wdb = brlcad.wdb_fopen(outputFilename)
+        # self.wdb.mk_id(dbTitle)
 
         self.modules = {}
 
-    def __del__(self):
-        if self.wdb is not None:
-            self.close()
+    # def __del__(self):
+    #     if self.wdb is not None:
+    #         self.close()
 
-    def close(self):
-        self.wdb.close()
-        self.wdb = None
+    # def close(self):
+    #     self.wdb.close()
+    #     self.wdb = None
 
     def execProgram(self, srcPath, parsedProgram, moduleObjName, asRegion):
         try:
@@ -169,12 +172,17 @@ class Cube(BrlCadObject):
     def __init__(self, ctx, s):
         BrlCadObject.__init__(self, basename='cube')
 
-        self.s = s
-
         if isinstance(s, float):
-            ctx.wdb.mk_rpp(self._name, [0,0,0], [s,s,s])
+            x = y = z = s
         else:
-            ctx.wdb.mk_rpp(self._name, [0,0,0], s)
+            x, y, z = s
+
+        self.brep = BRepPrimAPI_MakeBox(x, y, z)
+
+        # if isinstance(s, float):
+        #     ctx.wdb.mk_rpp(self._name, [0,0,0], [s,s,s])
+        # else:
+        #     ctx.wdb.mk_rpp(self._name, [0,0,0], s)
 
 class Cylinder(BrlCadObject):
     def __init__(self, ctx, h, d=None, d1=None, d2=None, r=None,
@@ -200,9 +208,13 @@ class Cylinder(BrlCadObject):
             z2 = h
         
         if d is not None:
-            ctx.wdb.mk_rcc(self._name, [0,0,z1], [0,0,z2], d/2.)
-        elif d1 is not None and d2 is not None:
-            ctx.wdb.mk_trc_h(self._name, [0,0,z1], [0,0,z2], d1/2., d2/2.)
+            self.brep = BRepPrimAPI_MakeCylinder(d/2., h)
+        else:
+            self.brep = BRepPrimAPI_MakeCone(d1/2., d2/2., h)
+        # if d is not None:
+        #     ctx.wdb.mk_rcc(self._name, [0,0,z1], [0,0,z2], d/2.)
+        # elif d1 is not None and d2 is not None:
+        #     ctx.wdb.mk_trc_h(self._name, [0,0,z1], [0,0,z2], d1/2., d2/2.)
 
 class Sphere(BrlCadObject):
     def __init__(self, ctx, r=None, d=None):
@@ -222,24 +234,29 @@ class Polyhedron(BrlCadObject):
         ctx.wdb.mk_bot(self._name, points, triangles)
 
 class Combination(BrlCadObject):
-    OPS = {
-            'add' : brlcad.CombinationList.UNION,
-            'sub' : brlcad.CombinationList.SUBTRACT,
-            'mul' : brlcad.CombinationList.INTERSECT,
-        }
+    # OPS = {
+    #         'add' : brlcad.CombinationList.UNION,
+    #         'sub' : brlcad.CombinationList.SUBTRACT,
+    #         'mul' : brlcad.CombinationList.INTERSECT,
+    #     }
 
     def __init__(self, ctx, op, name=None):
         BrlCadObject.__init__(self, name=name, basename='comb')
         self.op = op
 
-        self._objList = brlcad.CombinationList()
-        self._opVal = self.OPS[self.op]
+        # self._objList = brlcad.CombinationList()
+        self._objList = []
+        # self._opVal = self.OPS[self.op]
 
     def add(self, obj):
-        self._objList.add_member(obj._name, self._opVal, obj._mat)
+        #self._objList.add_member(obj._name, self._opVal, obj._mat)
+        self._objList.append(obj.brep)
 
     def make(self, ctx, asRegion):
-        ctx.wdb.mk_lfcomb(self._name, self._objList, asRegion)
+        # ctx.wdb.mk_lfcomb(self._name, self._objList, asRegion)
+        self.brep = reduce(
+            lambda a, b: BRepAlgoAPI_Cut(a.Shape(), b.Shape()),
+            self._objList)
 
 
 def regPrism(ctx, sides, r, h):
@@ -343,5 +360,8 @@ builtins.update(_builtinClasses)
 
 def run(srcPath, parsedProgram, outputFilename):
     ctx = Context(outputFilename)
-    ctx.execProgram(srcPath, parsedProgram, moduleObjName='main', asRegion=True)
-    ctx.close()
+    _, obj = ctx.execProgram(srcPath, parsedProgram, moduleObjName='main', asRegion=True)
+    
+    stl_writer = StlAPI_Writer()
+    stl_writer.SetASCIIMode(False)
+    stl_writer.Write(obj.brep.Shape(), outputFilename)
