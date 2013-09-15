@@ -231,29 +231,26 @@ class Polyhedron(BrlCadObject):
         ctx.wdb.mk_bot(self._name, points, triangles)
 
 class Combination(BrlCadObject):
-    # OPS = {
-    #         'add' : brlcad.CombinationList.UNION,
-    #         'sub' : brlcad.CombinationList.SUBTRACT,
-    #         'mul' : brlcad.CombinationList.INTERSECT,
-    #     }
+    OP_CLASSES = {
+            'add' : BRepAlgoAPI_Fuse,
+            'sub' : BRepAlgoAPI_Cut,
+            'mul' : BRepAlgoAPI_Common,
+        }
 
     def __init__(self, ctx, op, name=None):
         BrlCadObject.__init__(self, name=name, basename='comb')
         self.op = op
 
-        # self._objList = brlcad.CombinationList()
-        self._objList = []
-        # self._opVal = self.OPS[self.op]
+        self._brepList = []
+        self._opClass = self.OP_CLASSES[self.op]
 
     def add(self, obj):
-        #self._objList.add_member(obj._name, self._opVal, obj._mat)
-        self._objList.append(obj.brep)
+        self._brepList.append(obj.brep)
 
     def make(self, ctx, asRegion):
-        # ctx.wdb.mk_lfcomb(self._name, self._objList, asRegion)
         self.brep = reduce(
-            lambda a, b: BRepAlgoAPI_Cut(a.Shape(), b.Shape()),
-            self._objList)
+            lambda a, b: self._opClass(a.Shape(), b.Shape()),
+            self._brepList)
 
 
 def regPrism(ctx, sides, r, h):
