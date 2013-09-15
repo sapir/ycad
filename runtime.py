@@ -30,18 +30,7 @@ class Context:
         self.scopeChains = [[builtins]]
         self.combinations = []
 
-        # self.wdb = brlcad.wdb_fopen(outputFilename)
-        # self.wdb.mk_id(dbTitle)
-
         self.modules = {}
-
-    # def __del__(self):
-    #     if self.wdb is not None:
-    #         self.close()
-
-    # def close(self):
-    #     self.wdb.close()
-    #     self.wdb = None
 
     def execProgram(self, srcPath, parsedProgram, moduleObjName, asRegion):
         try:
@@ -184,11 +173,6 @@ class Cube(BrlCadObject):
             x, y, z = s
 
         self.brep = BRepPrimAPI_MakeBox(x, y, z)
-
-        # if isinstance(s, float):
-        #     ctx.wdb.mk_rpp(self._name, [0,0,0], [s,s,s])
-        # else:
-        #     ctx.wdb.mk_rpp(self._name, [0,0,0], s)
 
 class Cylinder(BrlCadObject):
     def __init__(self, ctx, h, d=None, d1=None, d2=None, r=None,
