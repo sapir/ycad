@@ -231,7 +231,7 @@ class Polyhedron(BrlCadObject):
     def __init__(self, ctx, points, triangles):
         BrlCadObject.__init__(self, basename='polyhedron')
 
-        ctx.wdb.mk_bot(self._name, points, triangles)
+        raise NotImplementedError
 
 class Combination(BrlCadObject):
     OP_CLASSES = {
