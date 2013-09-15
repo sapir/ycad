@@ -7,9 +7,10 @@ from math import *
 import copy
 import os
 import numpy as np
-from OCC.BRepPrimAPI import (BRepPrimAPI_MakeBox, BRepPrimAPI_MakeCylinder,
-    BRepPrimAPI_MakeCone)
-from OCC.BRepAlgoAPI import BRepAlgoAPI_Cut
+from OCC.gp import *
+from OCC.BRepBuilderAPI import *
+from OCC.BRepPrimAPI import *
+from OCC.BRepAlgoAPI import *
 from OCC.StlAPI import StlAPI_Writer
 
 
@@ -122,25 +123,19 @@ def _autoname(basename):
 class BrlCadObject(object):
     def __init__(self, name=None, basename='obj'):
         self._name = _autoname(basename) if name is None else name
-        self._mat = np.identity(4)
 
-    def _applyMatrix(self, ctx, mat):
-        # switching to the commented line will break withMatrix():
-        # ctx.wdb.apply_mat(self._name, mat)
-        self._mat = np.dot(mat, self._mat)
-
-    def withMatrix(self, ctx, mat):
+    def withTransform(self, transform):
         newObj = copy.copy(self)
-        newObj._applyMatrix(ctx, mat)
+        newObj.brep = BRepBuilderAPI_Transform(self.brep.Shape(), transform, True)
         return newObj
 
     def move(self, ctx, vec=None, x=0, y=0, z=0):
         if vec is None:
             vec = [x,y,z]
 
-        mat = np.identity(4)
-        brlcad.set_mat_deltas(mat, *vec)
-        return self.withMatrix(ctx, mat)
+        transform = gp_Trsf()
+        transform.SetTranslation(gp_Vec(*vec))
+        return self.withTransform(transform)
 
     def scale(self, ctx, vec=None, x=1, y=1, z=1):
         if vec is None:
@@ -164,9 +159,11 @@ class BrlCadObject(object):
             angle = z
             axis = [0, 0, 1]
 
-        mat = np.identity(4)
-        brlcad.rotate_mat(mat, axis, np.deg2rad(angle))
-        return self.withMatrix(ctx, mat)
+        gpAxis = gp_Ax1(gp_Pnt(), gp_Dir(*axis))
+
+        transform = gp_Trsf()
+        transform.SetRotation(gpAxis, angle)
+        return self.withTransform(transform)
 
 class Cube(BrlCadObject):
     def __init__(self, ctx, s):
