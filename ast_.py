@@ -5,7 +5,7 @@ from io import StringIO
 import operator
 import itertools
 import grammar
-from runtime import ReturnException, Module, BrlCadObject
+from runtime import ReturnException, Module, Object3D
 
 
 class Expr(object):
@@ -190,7 +190,7 @@ class ExprStmt(Stmt):
 
     def exec_(self, ctx):
         val = self.expr.eval(ctx)
-        if isinstance(val, BrlCadObject):
+        if isinstance(val, Object3D):
             ctx.curCombination.add(val)
 
 class IfStmt(Stmt):

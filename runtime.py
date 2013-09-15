@@ -109,7 +109,7 @@ def _autoname(basename):
     counter = _autoNameCounters[basename]
     return '{0}.{1}'.format(basename, next(counter))
 
-class BrlCadObject(object):
+class Object3D(object):
     def __init__(self, name=None, basename='obj'):
         self._name = _autoname(basename) if name is None else name
 
@@ -163,9 +163,9 @@ class BrlCadObject(object):
         transform.SetRotation(gpAxis, radians(angle))
         return self.withTransform(transform)
 
-class Cube(BrlCadObject):
+class Cube(Object3D):
     def __init__(self, ctx, s):
-        BrlCadObject.__init__(self, basename='cube')
+        Object3D.__init__(self, basename='cube')
 
         if isinstance(s, float):
             x = y = z = s
@@ -174,11 +174,11 @@ class Cube(BrlCadObject):
 
         self.brep = BRepPrimAPI_MakeBox(x, y, z)
 
-class Cylinder(BrlCadObject):
+class Cylinder(Object3D):
     def __init__(self, ctx, h, d=None, d1=None, d2=None, r=None,
             r1=None, r2=None, center=False):
 
-        BrlCadObject.__init__(self, basename='cylinder')
+        Object3D.__init__(self, basename='cylinder')
 
         if r is not None: d = r * 2
         if r1 is not None: d1 = r1 * 2
@@ -200,9 +200,9 @@ class Cylinder(BrlCadObject):
             transform.SetTranslation(gp_Vec(0, 0, -h/2.))
             self.applyTransform(transform)
 
-class Sphere(BrlCadObject):
+class Sphere(Object3D):
     def __init__(self, ctx, r=None, d=None):
-        BrlCadObject.__init__(self, basename='sphere')
+        Object3D.__init__(self, basename='sphere')
 
         if d is not None:
             r = d / 2.
@@ -211,13 +211,13 @@ class Sphere(BrlCadObject):
 
         self.brep = BRepPrimAPI_MakeSphere(r)
 
-class Polyhedron(BrlCadObject):
+class Polyhedron(Object3D):
     def __init__(self, ctx, points, triangles):
-        BrlCadObject.__init__(self, basename='polyhedron')
+        Object3D.__init__(self, basename='polyhedron')
 
         raise NotImplementedError
 
-class Combination(BrlCadObject):
+class Combination(Object3D):
     OP_CLASSES = {
             'add' : BRepAlgoAPI_Fuse,
             'sub' : BRepAlgoAPI_Cut,
@@ -225,7 +225,7 @@ class Combination(BrlCadObject):
         }
 
     def __init__(self, ctx, op, name=None):
-        BrlCadObject.__init__(self, name=name, basename='comb')
+        Object3D.__init__(self, name=name, basename='comb')
         self.op = op
 
         self._brepList = []
