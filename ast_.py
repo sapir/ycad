@@ -5,7 +5,7 @@ from io import StringIO
 import operator
 import itertools
 import grammar
-from runtime import ReturnException, Module, Object3D
+from runtime import ReturnException, Module, Block, builtins
 
 
 class Expr(object):
@@ -38,10 +38,11 @@ class VarNameExpr(Expr):
         return ctx.getVar(self.name)
 
 class FuncCallExpr(Expr):
-    def __init__(self, funcName, posParams, namedParams):
+    def __init__(self, funcName, posParams, namedParams, block):
         self.funcName = funcName.name
         self.posParams = posParams
         self.namedParams = namedParams
+        self.block = block
 
     @property
     def _paramsRepr(self):
@@ -51,7 +52,10 @@ class FuncCallExpr(Expr):
                 for (nameExpr, valExpr) in self.namedParams)))
     
     def __repr__(self):
-        return '{0.funcName}({0._paramsRepr})'.format(self)
+        s = '{0.funcName}({0._paramsRepr})'.format(self)
+        if self.block is not None:
+            s += ' ' + repr(self.block)
+        return s
 
     def call(self, ctx, funcObj):
         """Evaluate params in context, and pass them to funcObj."""
@@ -61,7 +65,10 @@ class FuncCallExpr(Expr):
         kwargs = dict((nameExpr.name, valExpr.eval(ctx))
             for (nameExpr, valExpr) in self.namedParams)
 
-        return funcObj(ctx, *args, **kwargs)
+        if self.block is None:
+            return funcObj(ctx, *args, **kwargs)
+        else:
+            return funcObj(ctx, *args, block=Block(self.block), **kwargs)
 
     def eval(self, ctx):
         return self.call(ctx, ctx.getVar(self.funcName))
@@ -117,25 +124,6 @@ class BinaryOpExpr(Expr):
         values = [expr.eval(ctx) for expr in self.exprs]
         return reduce(opFunc, values)
 
-class CsgExpr(Expr):
-    def __init__(self, opName, block):
-        self.opName = opName
-        self.block = block
-
-    def __repr__(self):
-        return '{0.opName} { {0.block} }'.format(self)
-
-    def eval(self, ctx):
-        ctx.startCombination(self.opName)
-        
-        try:
-            self.block.exec_(ctx)
-        except ReturnException:
-            ctx.endCombination()
-            raise
-
-        return ctx.endCombination()
-
 class MethodCallExpr(Expr):
     def __init__(self, expr, funcCallExpr):
         self.expr = expr
@@ -190,8 +178,7 @@ class ExprStmt(Stmt):
 
     def exec_(self, ctx):
         val = self.expr.eval(ctx)
-        if isinstance(val, Object3D):
-            ctx.curCombination.add(val)
+        ctx.sendToBlock(val)
 
 class IfStmt(Stmt):
     def __init__(self, condsAndBlocks, elseBlock=None):
@@ -268,21 +255,18 @@ class FuncDefStmt(Stmt):
                 ctx.setVar(name, default.eval(ctx))
 
             
-            # default combination for function
-            ctx.startCombination('add')
-            
             try:
-                self.block.exec_(ctx)
+                # run block with a default 'add' combination
+                defaultResult = builtins['add'](ctx, block=Block(self.block))
 
             except ReturnException as e:
-                ctx.endCombination()
                 return e.value
 
             finally:
                 ctx.popScope()
 
             # if haven't returned anything else, return the combination
-            return ctx.endCombination()
+            return defaultResult
 
 
         func.func_name = self.funcName

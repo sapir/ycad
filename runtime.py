@@ -2,8 +2,8 @@
 
 from __future__ import print_function
 from itertools import count, chain
-from collections import defaultdict
-from functools import wraps
+from collections import defaultdict, namedtuple
+from functools import wraps, partial
 from math import *
 import copy
 import os
@@ -26,25 +26,44 @@ class Module(object):
     def __getattr__(self, name):
         return self.scope[name]
 
+class Block(object):
+    def __init__(self, blockStmt):
+        self.stmt = blockStmt
+
+    def run(self, ctx):
+        values = []
+        ctx.pushBlock(self, values)
+        
+        try:
+            self.stmt.exec_(ctx)
+        finally:
+            ctx.popBlock()
+
+        return values
+
+    def _accept(self, values, value):
+        values.append(value)
+
 class Context:
+    _BlockInfo = namedtuple('_BlockInfo', 'block helperValue')
+
     def __init__(self, outputFilename, dbTitle='ycad database'):
         self.scopeChains = [[builtins]]
-        self.combinations = []
+        self.blocks = []
 
         self.modules = {}
 
     def execProgram(self, srcPath, parsedProgram, moduleObjName, asRegion):
         try:
             self.pushScope()
-            self.startCombination('add', name=moduleObjName)
             self.setVar('__path', [os.path.dirname(srcPath)])
 
-            parsedProgram.exec_(self)
+            output = Combination.fromBlock(self, 'add',
+                block=Block(parsedProgram), name=moduleObjName,
+                asRegion=asRegion)
 
-            # end default combination
-            comb = self.endCombination(asRegion=asRegion)
             scope = self.popScope()
-            return scope, comb
+            return scope, output
 
         except ReturnException:
             raise RuntimeError("return from main scope!")
@@ -82,16 +101,18 @@ class Context:
         self.curScope[name] = value
 
     @property
-    def curCombination(self):
-        return self.combinations[-1]
+    def curBlockInfo(self):
+        return self.blocks[-1]
 
-    def startCombination(self, op, name=None):
-        self.combinations.append(Combination(self, op, name=name))
+    def pushBlock(self, block, helperValue):
+        self.blocks.append(self._BlockInfo(block, helperValue))
 
-    def endCombination(self, asRegion=False):
-        comb = self.combinations.pop()
-        comb.make(self, asRegion=asRegion)
-        return comb
+    def popBlock(self):
+        return self.blocks.pop().block
+
+    def sendToBlock(self, value):
+        info = self.curBlockInfo
+        info.block._accept(info.helperValue, value)
 
     def findModuleInPath(self, moduleName):
         exts = ['.ycad']
@@ -224,23 +245,22 @@ class Combination(Object3D):
             'mul' : BRepAlgoAPI_Common,
         }
 
-    def __init__(self, ctx, op, name=None):
+    def __init__(self, ctx, op, objs, asRegion, name=None):
         Object3D.__init__(self, name=name, basename='comb')
         self.op = op
+        self.objs = objs
 
-        self._brepList = []
-        self._opClass = self.OP_CLASSES[self.op]
+        opClass = self.OP_CLASSES[self.op]
+        if self.objs:
+            breps = [obj.brep for obj in objs]
+            self.brep = reduce(
+                lambda a, b: opClass(a.Shape(), b.Shape()),
+                breps)
 
-    def add(self, obj):
-        self._brepList.append(obj.brep)
-
-    def make(self, ctx, asRegion):
-        if not self._brepList:
-            return
-
-        self.brep = reduce(
-            lambda a, b: self._opClass(a.Shape(), b.Shape()),
-            self._brepList)
+    @staticmethod
+    def fromBlock(ctx, op, block, asRegion, **kwargs):
+        objs = [obj for obj in block.run(ctx) if isinstance(obj, Object3D)]
+        return Combination(ctx, op, objs, asRegion, **kwargs)
 
 
 def regPrism(ctx, sides, r, h):
@@ -341,6 +361,10 @@ builtins = dict((f.func_name.lstrip('_'), f)
         _abs, _ceil, _exp, _floor, _ln, _len, _log, _max, _min, _norm,
         _pow, _round, _sign, _sqrt])
 builtins.update(_builtinClasses)
+
+builtins['add'] = partial(Combination.fromBlock, op='add', asRegion=False)
+builtins['sub'] = partial(Combination.fromBlock, op='sub', asRegion=False)
+builtins['mul'] = partial(Combination.fromBlock, op='mul', asRegion=False)
 
 
 def run(srcPath, parsedProgram, outputFilename):

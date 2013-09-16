@@ -108,11 +108,12 @@ paramListWithPosParams = (delimitedList(posParam)("posParams")
     + ZeroOrMore(Suppress(",") + namedParam)("namedParams") + FollowedBy(")"))
 paramList = Optional(paramListWithoutPosParams | paramListWithPosParams)
 paramList.setName("parameter list")
-funcCall = varName("funcName") + surround("()", paramList)
+funcCall = varName("funcName") + (
+    block("block") | (surround("()", paramList) + Optional(block("block"))))
 funcCall.setName("function call")
 funcCall.setParseAction(
-    lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.get('posParams', []),
-        toks.get('namedParams', [])))
+    lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.get("posParams", []),
+        toks.get("namedParams", []), toks.get("block", None)))
 
 
 mathAtom = ((literal | funcCall | varName | vector)
@@ -124,7 +125,7 @@ def mathAtomParseAction(s, loc, toks):
 
 mathAtom.setParseAction(mathAtomParseAction)
 
-mathExpr = operatorPrecedence(
+expr << operatorPrecedence(
     mathAtom,
     [
         ("^", 2, opAssoc.RIGHT, binaryOpParseAction),       # exponentiation
@@ -136,14 +137,7 @@ mathExpr = operatorPrecedence(
         ("and", 2, opAssoc.LEFT, binaryOpParseAction),
         ("or", 2, opAssoc.LEFT, binaryOpParseAction),
     ])
-mathExpr.setName("math expression")
-
-csgExpr = oneOfKeywords("add sub mul")("op") + block("block")
-csgExpr.setName("csg expression")
-csgExpr.setParseAction(lambda s,loc,toks: CsgExpr(toks.op, toks.block))
-
-expr << (csgExpr | mathExpr)
-expr.setName("expression")
+expr.setName("math expression")
 
 
 
