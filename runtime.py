@@ -39,8 +39,7 @@ class Context:
             self.startCombination('add', name=moduleObjName)
             self.setVar('__path', [os.path.dirname(srcPath)])
 
-            for stmt in parsedProgram:
-                stmt.exec_(self)
+            parsedProgram.exec_(self)
 
             # end default combination
             comb = self.endCombination(asRegion=asRegion)

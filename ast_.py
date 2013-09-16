@@ -163,7 +163,7 @@ class BlockStmt(Stmt):
             '\n\t'.join(
                 repr(stmt) for stmt in self.stmts))
 
-    def exec_(self,ctx):
+    def exec_(self, ctx):
         for stmt in self.stmts:
             stmt.exec_(ctx)
 
@@ -344,3 +344,10 @@ class ImportStmt(Stmt):
 
         # cache for next time
         ctx.modules[moduleName] = module
+
+
+class Program(BlockStmt):
+    # essentially a block, but has a different __repr__
+
+    def __repr__(self):
+        return '\n\t'.join(repr(stmt) for stmt in self.stmts)

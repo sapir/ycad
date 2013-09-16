@@ -209,5 +209,10 @@ stmt.setName("statement")
 
 program = ZeroOrMore(stmt) + StringEnd()
 program.setName("program")
+
 program.ignore(pythonStyleComment)
 program.ignore(cStyleComment)
+
+
+def parseFile(filename):
+    return Program(program.parseFile(filename).asList())

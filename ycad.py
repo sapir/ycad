@@ -25,7 +25,7 @@ if __name__ == '__main__':
     startTime = time.time()
 
     print('Parsing...', file=sys.stderr)
-    parsed = grammar.program.parseFile(args.filename)
+    parsed = grammar.parseFile(args.filename)
     timeAfterParsing = time.time()
     print('Parse time: {0:.2f}s'.format(timeAfterParsing - startTime))
 
