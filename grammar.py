@@ -13,9 +13,12 @@ ParserElement.enablePackrat()
 def oneOfKeywords(keywords):
     return MatchFirst(map(Keyword, keywords.split()))
 
-def surround(brackets, grammar):
+def surround(brackets, grammar, commit=False):
     left, right = brackets
-    return Suppress(left) + grammar + Suppress(right)
+    if commit:
+        return Suppress(left) - grammar + Suppress(right)
+    else:
+        return Suppress(left) + grammar + Suppress(right)
 
 
 literal = Forward()
@@ -55,7 +58,7 @@ literal.setParseAction(lambda s,loc,toks: LiteralExpr(toks[0]))
 expr = Forward()
 stmt = Forward()
 
-block = surround("{}", ZeroOrMore(stmt)).setName("block")
+block = surround("{}", ZeroOrMore(stmt), commit=True).setName("block")
 block.setParseAction(lambda s,loc,toks: BlockStmt(toks.asList()))
 
 
@@ -66,7 +69,7 @@ varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
 
 # TODO: attrAccess = varName + OneOrMore("." + varName)
 
-vector = surround("[]", delimitedList(expr)).setName("vector expression")
+vector = surround("[]", delimitedList(expr), commit=True).setName("vector expression")
 vector.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
 unaryOpParseAction = lambda s,loc,toks: UnaryOpExpr(toks[0][0], toks[0][1])
@@ -99,7 +102,7 @@ def compareOpParseAction(s, loc, toks):
     return reduce(lambda a,b: BinaryOpExpr('and', [a,b]), comparisons)
 
 
-namedParam = Group(varName("paramName") + Suppress("=") + expr("paramValue"))
+namedParam = Group(varName("paramName") + Suppress("=") - expr("paramValue"))
 namedParam.setName("named parameter")
 posParam = expr + ~FollowedBy("=")
 posParam.setName("positional parameter")
@@ -109,7 +112,7 @@ paramListWithPosParams = (delimitedList(posParam)("posParams")
 paramList = Optional(paramListWithoutPosParams | paramListWithPosParams)
 paramList.setName("parameter list")
 funcCall = varName("funcName") + (
-    block("block") | (surround("()", paramList) + Optional(block("block"))))
+    block("block") | (surround("()", paramList, commit=True) + Optional(block("block"))))
 funcCall.setName("function call")
 funcCall.setParseAction(
     lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.get("posParams", []),
@@ -141,18 +144,19 @@ expr.setName("math expression")
 
 
 
-assignment = varName("lvalue") + Suppress("=") + expr("rvalue")
+assignment = varName("lvalue") + Suppress("=") - expr("rvalue")
 assignment.setName("assignment statement")
 assignment.setParseAction(lambda s,loc,toks: AssignStmt(toks.lvalue, toks.rvalue))
 
 # TODO: allow named params but only after positional params
 paramDef = varName("paramName") + Optional(
-    Literal("=").suppress() + literal("default"), default=None)
+    Literal("=").suppress() - literal("default"), default=None)
 paramDef.setName("parameter definition")
 
-funcDef = (Keyword("func").suppress() + varName("funcName")
+funcDef = (Keyword("func").suppress() - varName("funcName")
     + surround("()",
-        Optional(delimitedList(Group(paramDef)))("params"))
+        Optional(delimitedList(Group(paramDef)))("params"),
+        commit=True)
     + block("block"))
 funcDef.setName("func statement")
 funcDef.setParseAction(
@@ -160,7 +164,7 @@ funcDef.setParseAction(
 
 
 def _makeSimpleStmt(keyword, stmtCls):
-    stmt = Keyword(keyword).suppress() + expr
+    stmt = Keyword(keyword).suppress() - expr
     stmt.setName("{0} statement".format(keyword))
     stmt.setParseAction(lambda s,loc,toks: stmtCls(toks[0]))
     return stmt
@@ -168,9 +172,9 @@ def _makeSimpleStmt(keyword, stmtCls):
 returnStmt = _makeSimpleStmt('return', ReturnStmt)
 simpleStmt = returnStmt
 
-ifStmt = (Keyword("if").suppress() + expr + block
-    + ZeroOrMore(Keyword("else").suppress() + Keyword("if").suppress() + expr + block)
-    + Optional(Keyword("else").suppress() + block))
+ifStmt = (Keyword("if").suppress() - expr + block
+    + ZeroOrMore(Keyword("else").suppress() + Keyword("if").suppress() - expr + block)
+    + Optional(Keyword("else").suppress() - block))
 ifStmt.setName("if statement")
 
 def ifStmtAction(s, loc, toks):
@@ -179,21 +183,21 @@ def ifStmtAction(s, loc, toks):
     return IfStmt(condsAndBlocks, elseBlock)
 ifStmt.setParseAction(ifStmtAction)
 
-forStmt = (Keyword("for").suppress() + varName("iterator")
-    + Keyword("in").suppress() + expr("iterable")
+forStmt = (Keyword("for").suppress() - varName("iterator")
+    + Keyword("in").suppress() - expr("iterable")
     + block("block"))
 forStmt.setName("for statement")
 forStmt.setParseAction(
     lambda s,loc,toks: ForStmt(toks.iterator, toks.iterable, toks.block))
 
 # TODO: implement
-part = Keyword("part") + stringLiteral("partName") + block("block")
+part = Keyword("part") - stringLiteral("partName") - block("block")
 part.setName("part statement")
 
 exprStmt = expr.copy().addParseAction(lambda s,loc,toks: ExprStmt(toks[0]))
 exprStmt.setName("expression statement")
 
-importStmt = Keyword("import").suppress() + delimitedList(identifier, delim='.')
+importStmt = Keyword("import").suppress() - delimitedList(identifier, delim='.')
 importStmt.setParseAction(lambda s,loc,toks: ImportStmt(toks.asList()))
 
 stmt << ~FollowedBy(Literal("}") | StringEnd()) + (block | funcDef
