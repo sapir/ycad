@@ -256,6 +256,8 @@ class Combination(Object3D):
             self.brep = reduce(
                 lambda a, b: opClass(a.Shape(), b.Shape()),
                 breps)
+        else:
+            self.brep = None
 
     @staticmethod
     def fromBlock(ctx, op, block, asRegion, **kwargs):
@@ -371,6 +373,11 @@ def run(srcPath, parsedProgram, outputFilename):
     ctx = Context(outputFilename)
     _, obj = ctx.execProgram(srcPath, parsedProgram, moduleObjName='main', asRegion=True)
     
-    stl_writer = StlAPI_Writer()
-    stl_writer.SetASCIIMode(False)
-    stl_writer.Write(obj.brep.Shape(), outputFilename)
+    if obj.brep is None:
+        with open(outputFilename, 'wb'):
+            # create an empty file
+            pass
+    else:
+        stl_writer = StlAPI_Writer()
+        stl_writer.SetASCIIMode(False)
+        stl_writer.Write(obj.brep.Shape(), outputFilename)
