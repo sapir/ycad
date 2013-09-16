@@ -111,8 +111,12 @@ paramListWithPosParams = (delimitedList(posParam)("posParams")
     + ZeroOrMore(Suppress(",") + namedParam)("namedParams") + FollowedBy(")"))
 paramList = Optional(paramListWithoutPosParams | paramListWithPosParams)
 paramList.setName("parameter list")
-funcCall = varName("funcName") + (
-    block("block") | (surround("()", paramList, commit=True) + Optional(block("block"))))
+funcCall = (
+    # add/sub/mul act like functions with no parameter list and a
+    # mandatory block
+    (oneOfKeywords("add sub mul")("funcName") - block("block"))
+    | (identifier("funcName") + surround("()", paramList, commit=True)
+        + Optional(block("block"))))
 funcCall.setName("function call")
 funcCall.setParseAction(
     lambda s,loc,toks: FuncCallExpr(toks.funcName, toks.get("posParams", []),

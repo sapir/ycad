@@ -39,7 +39,7 @@ class VarNameExpr(Expr):
 
 class FuncCallExpr(Expr):
     def __init__(self, funcName, posParams, namedParams, block):
-        self.funcName = funcName.name
+        self.funcName = funcName
         self.posParams = posParams
         self.namedParams = namedParams
         self.block = block
