@@ -352,6 +352,26 @@ _sqrt = wrapPythonFunc(sqrt)
 
 # Missing OpenSCAD functions: lookup, rands, str, search, import
 
+def makeTransformFunc(transformName):
+    def transform(ctx, *args, **kwargs):
+        block = kwargs.pop('block')
+
+        for obj in block.run(ctx):
+            # transform Object3Ds, leave everything else alone
+            if isinstance(obj, Object3D):
+                # transformName is also the method name
+                method = getattr(obj, transformName)
+                obj = method(ctx, *args, **kwargs)
+
+            ctx.sendToBlock(obj)
+
+    transform.func_name = transformName
+    return transform
+
+move = makeTransformFunc('move')
+scale = makeTransformFunc('scale')
+rotate = makeTransformFunc('rotate')
+
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
     [Cube, Cylinder, Sphere, Polyhedron])
@@ -360,7 +380,9 @@ builtins = dict((f.func_name.lstrip('_'), f)
     for f in [regPrism, _print, _range,
         _cos, _sin, _tan, _acos, _asin, _atan, _atan2,
         _abs, _ceil, _exp, _floor, _ln, _len, _log, _max, _min, _norm,
-        _pow, _round, _sign, _sqrt])
+        _pow, _round, _sign, _sqrt,
+
+        move, scale, rotate])
 builtins.update(_builtinClasses)
 
 builtins['add'] = partial(Combination.fromBlock, op='add')
