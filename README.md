@@ -10,5 +10,4 @@ For examples of current syntax, see the examples dir:
 * [simple.ycad](examples/simple.ycad)
 * [pedestal.ycad](examples/pedestal.ycad)
 
-ycad uses BRL-CAD as a backend. So in a sense, this is a simple
-language for generating BRL-CAD databases.
+ycad uses [pythonocc](https://github.com/tpaviot/pythonocc) as a backend.
