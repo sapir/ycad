@@ -308,6 +308,7 @@ def wrapPythonFunc(func):
 
 _print = wrapPythonFunc(print)
 _range = wrapPythonFunc(np.arange)
+_range.func_name = 'range'
 
 # OpenSCAD equivalent functions:
 
