@@ -3,6 +3,7 @@
 from __future__ import print_function
 from itertools import count, chain
 from collections import defaultdict
+from functools import wraps
 from math import *
 import copy
 import os
@@ -279,6 +280,7 @@ def regPrism(ctx, sides, r, h):
 
 
 def wrapPythonFunc(func):
+    @wraps(func)
     def wrapper(ctx, *args, **kwargs):
         return func(*args, **kwargs)
 
