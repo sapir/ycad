@@ -53,14 +53,13 @@ class Context:
 
         self.modules = {}
 
-    def execProgram(self, srcPath, parsedProgram, moduleObjName, asRegion):
+    def execProgram(self, srcPath, parsedProgram, moduleObjName):
         try:
             self.pushScope()
             self.setVar('__path', [os.path.dirname(srcPath)])
 
             output = Combination.fromBlock(self, 'add',
-                block=Block(parsedProgram), name=moduleObjName,
-                asRegion=asRegion)
+                block=Block(parsedProgram), name=moduleObjName)
 
             scope = self.popScope()
             return scope, output
@@ -245,7 +244,7 @@ class Combination(Object3D):
             'mul' : BRepAlgoAPI_Common,
         }
 
-    def __init__(self, ctx, op, objs, asRegion, name=None):
+    def __init__(self, ctx, op, objs, name=None):
         Object3D.__init__(self, name=name, basename='comb')
         self.op = op
         self.objs = objs
@@ -260,9 +259,9 @@ class Combination(Object3D):
             self.brep = None
 
     @staticmethod
-    def fromBlock(ctx, op, block, asRegion, **kwargs):
+    def fromBlock(ctx, op, block, **kwargs):
         objs = [obj for obj in block.run(ctx) if isinstance(obj, Object3D)]
-        return Combination(ctx, op, objs, asRegion, **kwargs)
+        return Combination(ctx, op, objs, **kwargs)
 
 
 def regPrism(ctx, sides, r, h):
@@ -364,14 +363,14 @@ builtins = dict((f.func_name.lstrip('_'), f)
         _pow, _round, _sign, _sqrt])
 builtins.update(_builtinClasses)
 
-builtins['add'] = partial(Combination.fromBlock, op='add', asRegion=False)
-builtins['sub'] = partial(Combination.fromBlock, op='sub', asRegion=False)
-builtins['mul'] = partial(Combination.fromBlock, op='mul', asRegion=False)
+builtins['add'] = partial(Combination.fromBlock, op='add')
+builtins['sub'] = partial(Combination.fromBlock, op='sub')
+builtins['mul'] = partial(Combination.fromBlock, op='mul')
 
 
 def run(srcPath, parsedProgram, outputFilename):
     ctx = Context(outputFilename)
-    _, obj = ctx.execProgram(srcPath, parsedProgram, moduleObjName='main', asRegion=True)
+    _, obj = ctx.execProgram(srcPath, parsedProgram, moduleObjName='main')
     
     if obj.brep is None:
         with open(outputFilename, 'wb'):

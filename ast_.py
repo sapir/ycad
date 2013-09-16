@@ -322,7 +322,7 @@ class ImportStmt(Stmt):
         modulePath = ctx.findModuleInPath(moduleName)
         program = grammar.program.parseFile(modulePath)
         scope, moduleObj = ctx.execProgram(modulePath, program,
-            moduleObjName='module.' + moduleName, asRegion=False)
+            moduleObjName='module.' + moduleName)
         module = Module(scope)
         ctx.setVar(moduleName, module)
 
