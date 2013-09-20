@@ -137,7 +137,7 @@ class Object3D(object):
     def applyTransform(self, transform, apiClass=BRepBuilderAPI_Transform,
             copy=False):
 
-        self.brep = apiClass(self.brep.Shape(), transform, copy)
+        self.shape = apiClass(self.shape, transform, copy).Shape()
 
     def withTransform(self, transform, apiClass=BRepBuilderAPI_Transform):
         newObj = copy.copy(self)
@@ -200,7 +200,7 @@ class Cube(Object3D):
         else:
             x, y, z = s
 
-        self.brep = BRepPrimAPI_MakeBox(x, y, z)
+        self.shape = BRepPrimAPI_MakeBox(x, y, z).Shape()
 
 class Cylinder(Object3D):
     def __init__(self, ctx, h, d=None, d1=None, d2=None, r=None,
@@ -219,9 +219,9 @@ class Cylinder(Object3D):
         assert (d is not None) ^ (d1 is not None and d2 is not None)
 
         if d is not None:
-            self.brep = BRepPrimAPI_MakeCylinder(d/2., h)
+            self.shape = BRepPrimAPI_MakeCylinder(d/2., h).Shape()
         else:
-            self.brep = BRepPrimAPI_MakeCone(d1/2., d2/2., h)
+            self.shape = BRepPrimAPI_MakeCone(d1/2., d2/2., h).Shape()
 
         if center:
             transform = gp_Trsf()
@@ -237,7 +237,7 @@ class Sphere(Object3D):
 
         assert isinstance(r, float)
 
-        self.brep = BRepPrimAPI_MakeSphere(r)
+        self.shape = BRepPrimAPI_MakeSphere(r).Shape()
 
 class Polyhedron(Object3D):
     def __init__(self, ctx, points, triangles):
@@ -259,12 +259,10 @@ class Combination(Object3D):
 
         opClass = self.OP_CLASSES[self.op]
         if self.objs:
-            breps = [obj.brep for obj in objs]
-            self.brep = reduce(
-                lambda a, b: opClass(a.Shape(), b.Shape()),
-                breps)
+            shapes = [obj.shape for obj in objs]
+            self.shape = reduce(lambda a, b: opClass(a, b).Shape(), shapes)
         else:
-            self.brep = None
+            self.shape = None
 
     @staticmethod
     def fromBlock(ctx, op, block, **kwargs):
@@ -318,7 +316,7 @@ class Circle(Object3D):
         circ = GC_MakeCircle(gp_Ax2(), r).Value()
         edge = BRepBuilderAPI_MakeEdge(circ).Edge()
         wire = BRepBuilderAPI_MakeWire(edge).Wire()
-        self.brep = BRepBuilderAPI_MakeFace(wire)
+        self.shape = BRepBuilderAPI_MakeFace(wire).Shape()
 
 class Polygon(Object3D):
     def __init__(self, ctx, points, paths=None):
@@ -351,7 +349,7 @@ class Polygon(Object3D):
             wire = makeWireFromPath(path)
             faceMaker.Add(wire)
 
-        self.brep = faceMaker
+        self.shape = faceMaker.Shape()
 
 class Square(Polygon):
     def __init__(self, ctx, size=None, x=None, y=None, center=False):
@@ -376,15 +374,15 @@ class LinearExtrusion(Object3D):
             raise NotImplementedError("twist not yet supported")
 
         Object3D.__init__(self)
-        self.brep = BRepPrimAPI_MakePrism(
-            obj.brep.Shape(), gp_Vec(0, 0, h), True)
+        self.shape = BRepPrimAPI_MakePrism(
+            obj.shape, gp_Vec(0, 0, h), True).Shape()
 
 class Revolution(Object3D):
     def __init__(self, ctx, obj, angle=360):
         Object3D.__init__(self)
 
-        shape = obj.brep.Shape()
-        self.brep = BRepPrimAPI_MakeRevol(shape, gp_OY(), radians(angle), True)
+        self.shape = BRepPrimAPI_MakeRevol(
+            obj.shape, gp_OY(), radians(angle), True).Shape()
 
 def extrude(ctx, *args, **kwargs):
     block = kwargs.pop('block')
@@ -494,11 +492,11 @@ def run(srcPath, parsedProgram, outputFilename):
     ctx = Context(outputFilename)
     _, obj = ctx.execProgram(srcPath, parsedProgram, moduleObjName='main')
     
-    if obj.brep is None:
+    if obj.shape is None:
         with open(outputFilename, 'wb'):
             # create an empty file
             pass
     else:
         stl_writer = StlAPI_Writer()
         stl_writer.SetASCIIMode(False)
-        stl_writer.Write(obj.brep.Shape(), outputFilename)
+        stl_writer.Write(obj.shape, outputFilename)
