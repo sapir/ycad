@@ -131,7 +131,8 @@ def _autoname(basename):
     return '{0}.{1}'.format(basename, next(counter))
 
 class Object3D(object):
-    def __init__(self, name=None, basename='obj'):
+    def __init__(self, shape=None, name=None, basename='obj'):
+        self.shape = shape
         self._name = _autoname(basename) if name is None else name
 
     def applyTransform(self, transform, apiClass=BRepBuilderAPI_Transform,
