@@ -342,6 +342,23 @@ class Polygon(Object3D):
 
         self.brep = faceMaker
 
+class Square(Polygon):
+    def __init__(self, ctx, size=None, x=None, y=None, center=False):
+        assert (size is not None) ^ (x is not None and y is not None)
+
+        if size is not None:
+            if isinstance(size, float):
+                x = y = size
+            else:
+                x, y = size
+
+        points = [[0, 0], [0, y], [x, y], [x, 0]]
+
+        if center:
+            points = [(x0 - x / 2, y0 - y / 2) for (x0, y0) in points]
+
+        Polygon.__init__(self, ctx, points)
+
 
 def wrapPythonFunc(func):
     @wraps(func)
@@ -420,7 +437,7 @@ rotate = makeTransformFunc('rotate')
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
     [Cube, Cylinder, Sphere, Polyhedron,
-    Circle, Polygon])
+    Circle, Polygon, Square])
 
 builtins = dict((f.func_name.lstrip('_'), f)
     for f in [regPrism, _print, _range,
