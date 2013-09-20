@@ -187,6 +187,9 @@ class Object3D(object):
     def extrude(self, ctx, *args, **kwargs):
         return LinearExtrusion(ctx, self, *args, **kwargs)
 
+    def revolve(self, ctx, *args, **kwargs):
+        return Revolution(ctx, self, *args, **kwargs)
+
 
 class Cube(Object3D):
     def __init__(self, ctx, s):
@@ -374,6 +377,14 @@ class LinearExtrusion(Object3D):
 
         Object3D.__init__(self)
         self.brep = BRepPrimAPI_MakePrism(obj.brep.Shape(), gp_Vec(0, 0, h))
+
+class Revolution(Object3D):
+    def __init__(self, ctx, obj, angle=360):
+        Object3D.__init__(self)
+
+        shape = obj.brep.Shape()
+        axis = gp_Ax1(gp_Pnt(), gp_Dir(0, 1, 0))
+        self.brep = BRepPrimAPI_MakeRevol(shape, axis, radians(angle))
 
 def extrude(ctx, *args, **kwargs):
     block = kwargs.pop('block')
