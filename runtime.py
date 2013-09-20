@@ -384,8 +384,7 @@ class Revolution(Object3D):
         Object3D.__init__(self)
 
         shape = obj.brep.Shape()
-        axis = gp_Ax1(gp_Pnt(), gp_Dir(0, 1, 0))
-        self.brep = BRepPrimAPI_MakeRevol(shape, axis, radians(angle), True)
+        self.brep = BRepPrimAPI_MakeRevol(shape, gp_OY(), radians(angle), True)
 
 def extrude(ctx, *args, **kwargs):
     block = kwargs.pop('block')
