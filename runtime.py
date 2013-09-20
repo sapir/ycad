@@ -376,7 +376,8 @@ class LinearExtrusion(Object3D):
             raise NotImplementedError("twist not yet supported")
 
         Object3D.__init__(self)
-        self.brep = BRepPrimAPI_MakePrism(obj.brep.Shape(), gp_Vec(0, 0, h))
+        self.brep = BRepPrimAPI_MakePrism(
+            obj.brep.Shape(), gp_Vec(0, 0, h), True)
 
 class Revolution(Object3D):
     def __init__(self, ctx, obj, angle=360):
@@ -384,7 +385,7 @@ class Revolution(Object3D):
 
         shape = obj.brep.Shape()
         axis = gp_Ax1(gp_Pnt(), gp_Dir(0, 1, 0))
-        self.brep = BRepPrimAPI_MakeRevol(shape, axis, radians(angle))
+        self.brep = BRepPrimAPI_MakeRevol(shape, axis, radians(angle), True)
 
 def extrude(ctx, *args, **kwargs):
     block = kwargs.pop('block')
