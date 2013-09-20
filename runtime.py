@@ -311,6 +311,37 @@ class Circle(Object3D):
         wire = BRepBuilderAPI_MakeWire(edge).Wire()
         self.brep = BRepBuilderAPI_MakeFace(wire)
 
+class Polygon(Object3D):
+    def __init__(self, ctx, points, paths=None):
+        occPoints = [gp_Pnt(x, y, 0) for (x, y) in points]
+
+        if paths is None:
+            paths = [range(len(occPoints)) + [0]]
+        else:
+            # close loops and convert floats to ints
+            paths = [map(int, p + [p[0]]) for p in paths]
+
+        def makeWireFromPath(path):
+            wireMaker = BRepBuilderAPI_MakeWire()
+
+            for i, j in zip(path, path[1:]):
+                p1 = occPoints[i]
+                p2 = occPoints[j]
+                seg = GC_MakeSegment(p1, p2).Value()
+                edge = BRepBuilderAPI_MakeEdge(seg).Edge()
+                wireMaker.Add(edge)
+
+            return wireMaker.Wire()
+
+        # first wire has to be passed directly to constructor,
+        # otherwise a segfault occurs for some reason
+        faceMaker = BRepBuilderAPI_MakeFace(makeWireFromPath(paths[0]))
+        for path in paths[1:]:
+            wire = makeWireFromPath(path)
+            faceMaker.Add(wire)
+
+        self.brep = faceMaker
+
 
 def wrapPythonFunc(func):
     @wraps(func)
@@ -388,7 +419,8 @@ rotate = makeTransformFunc('rotate')
 
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
-    [Cube, Cylinder, Sphere, Polyhedron, Circle])
+    [Cube, Cylinder, Sphere, Polyhedron,
+    Circle, Polygon])
 
 builtins = dict((f.func_name.lstrip('_'), f)
     for f in [regPrism, _print, _range,
