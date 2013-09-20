@@ -13,6 +13,7 @@ from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepAlgoAPI import *
 from OCC.StlAPI import StlAPI_Writer
+from OCC.GC import *
 
 
 class ReturnException(BaseException):
@@ -298,6 +299,18 @@ def regPrism(ctx, sides, r, h):
 
     return Polyhedron(ctx, points=vertices, triangles=faces)
 
+class Circle(Object3D):
+    def __init__(self, ctx, r=None, d=None):
+        assert (r is not None) ^ (d is not None)
+
+        if d is not None:
+            r = d / 2.
+
+        circ = GC_MakeCircle(gp_Ax2(), r).Value()
+        edge = BRepBuilderAPI_MakeEdge(circ).Edge()
+        wire = BRepBuilderAPI_MakeWire(edge).Wire()
+        self.brep = BRepBuilderAPI_MakeFace(wire)
+
 
 def wrapPythonFunc(func):
     @wraps(func)
@@ -375,7 +388,7 @@ rotate = makeTransformFunc('rotate')
 
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
-    [Cube, Cylinder, Sphere, Polyhedron])
+    [Cube, Cylinder, Sphere, Polyhedron, Circle])
 
 builtins = dict((f.func_name.lstrip('_'), f)
     for f in [regPrism, _print, _range,
