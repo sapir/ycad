@@ -499,6 +499,8 @@ builtins.update(_builtinClasses)
 builtins['add'] = partial(Combination.fromBlock, op='add')
 builtins['sub'] = partial(Combination.fromBlock, op='sub')
 builtins['mul'] = partial(Combination.fromBlock, op='mul')
+builtins['pi'] = pi
+builtins['e'] = e
 
 
 def run(srcPath, parsedProgram, outputFilename):
