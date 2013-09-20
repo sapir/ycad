@@ -375,6 +375,10 @@ class LinearExtrusion(Object3D):
         Object3D.__init__(self)
         self.brep = BRepPrimAPI_MakePrism(obj.brep.Shape(), gp_Vec(0, 0, h))
 
+def extrude(ctx, *args, **kwargs):
+    block = kwargs.pop('block')
+    fusedExtrusionProfile = Combination.fromBlock(ctx, 'add', block)
+    return fusedExtrusionProfile.extrude(ctx, *args, **kwargs)
 
 
 def wrapPythonFunc(func):
@@ -462,7 +466,7 @@ builtins = dict((f.func_name.lstrip('_'), f)
         _abs, _ceil, _exp, _floor, _ln, _len, _log, _max, _min, _norm,
         _pow, _round, _sign, _sqrt,
 
-        move, scale, rotate])
+        move, scale, rotate, extrude])
 builtins.update(_builtinClasses)
 
 builtins['add'] = partial(Combination.fromBlock, op='add')
