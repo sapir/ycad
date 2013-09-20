@@ -301,6 +301,8 @@ def regPrism(ctx, sides, r, h):
 
 class Circle(Object3D):
     def __init__(self, ctx, r=None, d=None):
+        Object3D.__init__(self)
+        
         assert (r is not None) ^ (d is not None)
 
         if d is not None:
@@ -313,6 +315,8 @@ class Circle(Object3D):
 
 class Polygon(Object3D):
     def __init__(self, ctx, points, paths=None):
+        Object3D.__init__(self)
+
         occPoints = [gp_Pnt(x, y, 0) for (x, y) in points]
 
         if paths is None:
