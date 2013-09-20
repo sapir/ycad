@@ -184,6 +184,10 @@ class Object3D(object):
         transform.SetRotation(gpAxis, radians(angle))
         return self.withTransform(transform)
 
+    def extrude(self, ctx, *args, **kwargs):
+        return LinearExtrusion(ctx, self, *args, **kwargs)
+
+
 class Cube(Object3D):
     def __init__(self, ctx, s):
         Object3D.__init__(self, basename='cube')
@@ -302,7 +306,7 @@ def regPrism(ctx, sides, r, h):
 class Circle(Object3D):
     def __init__(self, ctx, r=None, d=None):
         Object3D.__init__(self)
-        
+
         assert (r is not None) ^ (d is not None)
 
         if d is not None:
@@ -362,6 +366,15 @@ class Square(Polygon):
             points = [(x0 - x / 2, y0 - y / 2) for (x0, y0) in points]
 
         Polygon.__init__(self, ctx, points)
+
+class LinearExtrusion(Object3D):
+    def __init__(self, ctx, obj, h, twist=0):
+        if twist != 0:
+            raise NotImplementedError("twist not yet supported")
+
+        Object3D.__init__(self)
+        self.brep = BRepPrimAPI_MakePrism(obj.brep.Shape(), gp_Vec(0, 0, h))
+
 
 
 def wrapPythonFunc(func):
