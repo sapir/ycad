@@ -12,8 +12,9 @@ from OCC.gp import *
 from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepAlgoAPI import *
-from OCC.StlAPI import StlAPI_Writer
+from OCC.StlAPI import StlAPI_Reader, StlAPI_Writer
 from OCC.GC import *
+from OCC.TopoDS import *
 
 
 class ReturnException(BaseException):
@@ -448,7 +449,16 @@ def _sign(ctx, n):
 
 _sqrt = wrapPythonFunc(sqrt)
 
-# Missing OpenSCAD functions: lookup, rands, str, search, import
+# Missing OpenSCAD functions: lookup, rands, str, search, import (for dxf)
+
+def _read(ctx, path):
+    shape = TopoDS_Shape()
+
+    reader = StlAPI_Reader()
+    reader.Read(shape, path)
+
+    return Object3D(shape)
+
 
 def makeTransformFunc(transformName):
     def transform(ctx, *args, **kwargs):
@@ -476,7 +486,9 @@ _builtinClasses = dict((c.__name__.lower(), c) for c in
     Circle, Polygon, Square])
 
 builtins = dict((f.func_name.lstrip('_'), f)
-    for f in [regPrism, _print, _range,
+    for f in [
+        regPrism, _read, _print, _range,
+
         _cos, _sin, _tan, _acos, _asin, _atan, _atan2,
         _abs, _ceil, _exp, _floor, _ln, _len, _log, _max, _min, _norm,
         _pow, _round, _sign, _sqrt,
