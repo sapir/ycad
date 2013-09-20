@@ -391,6 +391,11 @@ def extrude(ctx, *args, **kwargs):
     fusedExtrusionProfile = Combination.fromBlock(ctx, 'add', block)
     return fusedExtrusionProfile.extrude(ctx, *args, **kwargs)
 
+def revolve(ctx, *args, **kwargs):
+    block = kwargs.pop('block')
+    fusedExtrusionProfile = Combination.fromBlock(ctx, 'add', block)
+    return fusedExtrusionProfile.revolve(ctx, *args, **kwargs)
+
 
 def wrapPythonFunc(func):
     @wraps(func)
