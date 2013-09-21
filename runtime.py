@@ -423,13 +423,16 @@ class Square(Polygon):
         Polygon.__init__(self, ctx, points)
 
 class LinearExtrusion(Object3D):
-    def __init__(self, ctx, obj, h, twist=0):
+    def __init__(self, ctx, obj, h, twist=0, center=False):
         if twist != 0:
             raise NotImplementedError("twist not yet supported")
 
         Object3D.__init__(self)
         self.shape = BRepPrimAPI_MakePrism(
             obj.shape, gp_Vec(0, 0, h), True).Shape()
+
+        if center:
+            self._moveApply([0, 0, -h / 2.])
 
 class Revolution(Object3D):
     def __init__(self, ctx, obj, angle=360):
