@@ -173,9 +173,11 @@ class Object3D(object):
 
     def scale(self, ctx, vec=None, x=1, y=1, z=1):
         if vec is not None:
-            x, y, z = vec
-        elif len(vec) == 2:
-            vec += [1]
+            if len(vec) == 3:
+                x, y, z = vec
+            elif len(vec) == 2:
+                x, y = vec
+                z = 1
 
         transform = gp_GTrsf(
             gp_Mat(
