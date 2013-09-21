@@ -349,7 +349,7 @@ def regPoly(ctx, sides, r):
     # angle to each of the vertices around the center
     angles = [i*2*pi/sides for i in xrange(sides)]
 
-    points = [[cos(a) * r, sin(a) * r, 0] for a in angles]
+    points = [[cos(a) * r, sin(a) * r] for a in angles]
 
     return Polygon(ctx, points)
 
