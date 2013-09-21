@@ -14,7 +14,17 @@ from OCC.BRepPrimAPI import *
 from OCC.BRepAlgoAPI import *
 from OCC.StlAPI import StlAPI_Reader, StlAPI_Writer
 from OCC.GC import *
+from OCC.TopAbs import *
+from OCC.TopExp import *
 from OCC.TopoDS import *
+
+
+def topoExplorerIter(*args, **kwargs):
+    """Iterates over contents of a TopoDS shape, using a TopExp_Explorer."""
+    exp = TopExp_Explorer(*args, **kwargs)
+    while exp.More():
+        yield exp.Current()
+        exp.Next()
 
 
 class ReturnException(BaseException):
@@ -261,7 +271,21 @@ class Combination(Object3D):
 
         opClass = self.OP_CLASSES[self.op]
         if self.objs:
-            shapes = [obj.shape for obj in objs]
+            # BRepAlgoAPI seems not to like handling compounds containing
+            # solids so we convert them to single solids. (docs say that
+            # compsolids aren't handled either, so we fix those, too).
+            def fixCompounds(shape):
+                if shape.ShapeType() == TopAbs_COMPSOLID:
+                    return self.compSolidToSolid(compSolid)
+
+                elif shape.ShapeType() == TopAbs_COMPOUND:
+                    compoundType = self._getCompoundType(shape)
+                    if compoundType == TopAbs_SOLID:
+                        return self.consolidateCompoundSolids(shape)
+
+                return shape
+
+            shapes = [fixCompounds(obj.shape) for obj in objs]
             self.shape = reduce(lambda a, b: opClass(a, b).Shape(), shapes)
         else:
             self.shape = None
@@ -270,6 +294,47 @@ class Combination(Object3D):
     def fromBlock(ctx, op, block, **kwargs):
         objs = [obj for obj in block.run(ctx) if isinstance(obj, Object3D)]
         return Combination(ctx, op, objs, **kwargs)
+
+    @staticmethod
+    def _getCompoundType(compound):
+        assert compound.ShapeType() == TopAbs_COMPOUND
+
+        hasSolids = False
+        for obj in topoExplorerIter(compound, TopAbs_SOLID):
+            hasSolids = True
+            break
+
+        hasExtraFaces = False
+        # look for faces that aren't in solids
+        for obj in topoExplorerIter(compound, TopAbs_FACE, TopAbs_SOLID):
+            hasExtraFaces = True
+            break
+
+        assert hasSolids ^ hasExtraFaces
+
+        if hasSolids:
+            return TopAbs_SOLID
+        else:
+            assert hasExtraFaces
+            return TopAbs_FACE
+
+    @staticmethod
+    def compSolidToSolid(compSolid):
+        return BRepBuilderAPI_MakeSolid(compSolid).Shape()
+
+    @staticmethod
+    def consolidateCompoundSolids(compound):
+        '''Assumes _getCompoundType(compound) is TopAbs_SOLID.'''
+
+        builder = TopoDS_Builder()
+
+        compSolid = TopoDS_CompSolid()
+        builder.MakeCompSolid(compSolid)
+
+        for solid in topoExplorerIter(compound, TopAbs_SOLID):
+            builder.Add(compSolid, TopoDS_solid(solid))
+
+        return Combination.compSolidToSolid(compSolid)
 
 
 def regPrism(ctx, sides, r, h):
