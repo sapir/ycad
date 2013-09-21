@@ -37,6 +37,20 @@ class VarNameExpr(Expr):
     def eval(self, ctx):
         return ctx.getVar(self.name)
 
+class SubscriptExpr(Expr):
+    def __init__(self, arrayExpr, subscriptExpr):
+        self.arrayExpr = arrayExpr
+        self.subscriptExpr = subscriptExpr
+
+    def __repr__(self):
+        return "{0}[{1}]".format(
+            repr(self.arrayExpr), repr(self.subscriptExpr))
+
+    def eval(self, ctx):
+        array = self.arrayExpr.eval(ctx)
+        subscript = int(self.subscriptExpr.eval(ctx))
+        return array[subscript]
+
 class FuncCallExpr(Expr):
     def __init__(self, funcName, posParams, namedParams, block):
         self.funcName = funcName

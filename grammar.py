@@ -123,12 +123,23 @@ funcCall.setParseAction(
         toks.get("namedParams", []), toks.get("block", None)))
 
 
+# put expr in a Group so that mathAtomParseAction() doesn't confuse it with
+# a method call.
+# TODO: find a better way to do this
+subscript = Group(surround("[]", expr))
+
 mathAtom = ((literal | funcCall | varName | vector)
-    + ZeroOrMore(Suppress(".") + funcCall))
+    + ZeroOrMore((Suppress(".") + funcCall) | subscript))
 mathAtom.setName("math atom")
 
 def mathAtomParseAction(s, loc, toks):
-    return reduce(MethodCallExpr, toks)
+    def buildExpr(a, b):
+        if isinstance(b, FuncCallExpr):
+            return MethodCallExpr(a, b)
+        else:
+            return SubscriptExpr(a, b[0])
+
+    return reduce(buildExpr, toks)
 
 mathAtom.setParseAction(mathAtomParseAction)
 
