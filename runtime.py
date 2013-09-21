@@ -149,6 +149,9 @@ class Object3D(object):
     def applyTransform(self, transform, apiClass=BRepBuilderAPI_Transform,
             copy=False):
 
+        if self.shape is None:
+            return
+
         self.shape = apiClass(self.shape, transform, copy).Shape()
 
     def withTransform(self, transform, apiClass=BRepBuilderAPI_Transform):
@@ -294,7 +297,8 @@ class Combination(Object3D):
 
                 return shape
 
-            shapes = [fixCompounds(obj.shape) for obj in objs]
+            shapes = [fixCompounds(obj.shape) for obj in objs
+                if obj.shape is not None]
             self.shape = reduce(lambda a, b: opClass(a, b).Shape(), shapes)
         else:
             self.shape = None
