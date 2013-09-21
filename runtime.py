@@ -156,6 +156,11 @@ class Object3D(object):
         newObj.applyTransform(transform, apiClass, copy=True)
         return newObj
 
+    def _moveApply(self, vec):
+        transform = gp_Trsf()
+        transform.SetTranslation(gp_Vec(*vec))
+        self.applyTransform(transform)
+
     def move(self, ctx, vec=None, x=0, y=0, z=0):
         if vec is None:
             vec = [x,y,z]
@@ -207,7 +212,6 @@ class Object3D(object):
     def revolve(self, ctx, *args, **kwargs):
         return Revolution(ctx, self, *args, **kwargs)
 
-
 class Cube(Object3D):
     def __init__(self, ctx, s):
         Object3D.__init__(self, basename='cube')
@@ -241,9 +245,7 @@ class Cylinder(Object3D):
             self.shape = BRepPrimAPI_MakeCone(d1/2., d2/2., h).Shape()
 
         if center:
-            transform = gp_Trsf()
-            transform.SetTranslation(gp_Vec(0, 0, -h/2.))
-            self.applyTransform(transform)
+            self._moveApply([0, 0, -h / 2.])
 
 class Sphere(Object3D):
     def __init__(self, ctx, r=None, d=None):
