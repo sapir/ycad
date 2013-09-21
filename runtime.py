@@ -342,6 +342,17 @@ class Combination(Object3D):
         return Combination.compSolidToSolid(compSolid)
 
 
+def regPoly(ctx, sides, r):
+    assert sides == int(sides)
+    sides = int(sides)
+
+    # angle to each of the vertices around the center
+    angles = [i*2*pi/sides for i in xrange(sides)]
+
+    points = [[cos(a) * r, sin(a) * r, 0] for a in angles]
+
+    return Polygon(ctx, points)
+
 def regPrism(ctx, sides, r, h):
     # TODO: use BRL-CAD's arbn primitive, much simpler
     assert sides == int(sides)
@@ -557,7 +568,7 @@ _builtinClasses = dict((c.__name__.lower(), c) for c in
 
 builtins = dict((f.func_name.lstrip('_'), f)
     for f in [
-        regPrism, _read, _print, _range,
+        regPoly, regPrism, _read, _print, _range,
 
         _cos, _sin, _tan, _acos, _asin, _atan, _atan2,
         _abs, _ceil, _exp, _floor, _ln, _len, _log, _max, _min, _norm,
