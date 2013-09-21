@@ -159,6 +159,8 @@ class Object3D(object):
     def move(self, ctx, vec=None, x=0, y=0, z=0):
         if vec is None:
             vec = [x,y,z]
+        elif len(vec) == 2:
+            vec += [0]
 
         transform = gp_Trsf()
         transform.SetTranslation(gp_Vec(*vec))
@@ -167,6 +169,8 @@ class Object3D(object):
     def scale(self, ctx, vec=None, x=1, y=1, z=1):
         if vec is not None:
             x, y, z = vec
+        elif len(vec) == 2:
+            vec += [1]
 
         transform = gp_GTrsf(
             gp_Mat(
@@ -177,6 +181,7 @@ class Object3D(object):
         return self.withTransform(transform, apiClass=BRepBuilderAPI_GTransform)
 
     def rotate(self, ctx, angle=None, axis=None, x=None, y=None, z=None):
+        # TODO: support 2d version
         assert ((angle is not None and axis is not None)
             ^ (x is not None) ^ (y is not None) ^ (z is not None))
 
