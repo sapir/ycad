@@ -354,38 +354,7 @@ def regPoly(ctx, sides, r):
     return Polygon(ctx, points)
 
 def regPrism(ctx, sides, r, h):
-    # TODO: use BRL-CAD's arbn primitive, much simpler
-    assert sides == int(sides)
-    sides = int(sides)
-
-    # angle to each of the vertices around the center
-    angles = [i*2*pi/sides for i in xrange(sides)]
-
-    origin = [0,0,0]
-    bottomVertices = [[cos(a) * r, sin(a) * r, 0]
-        for a in angles] + [origin]
-    topVertices = [(x,y,z+h) for (x,y,z) in bottomVertices]
-
-    vertices = bottomVertices + topVertices
-    originIdx = len(bottomVertices) - 1     # index of origin vertex
-    topIdx = len(bottomVertices)            # index of topVertices
-
-    # build triangles out from origin
-    bottomFaces = [[originIdx, i, (i + 1) % sides] for i in xrange(sides)]
-
-    # again for top faces. vertex order is reversed from bottom,
-    # because it's facing other way.
-    topFaces = [[topIdx + originIdx, topIdx + (i + 1) % sides, topIdx + i]
-        for i in xrange(sides)]
-
-    # build quads connecting bottomVertices and topVertices
-    connectingFaces1 = [[i, topIdx + i, (i + 1) % sides] for i in xrange(sides)]
-    connectingFaces2 = [[topIdx + i, topIdx + (i + 1) % sides, (i + 1) % sides]
-        for i in xrange(sides)]
-
-    faces = bottomFaces + topFaces + connectingFaces1 + connectingFaces2
-
-    return Polyhedron(ctx, points=vertices, triangles=faces)
+    return regPoly(ctx, sides, r).extrude(ctx, h)
 
 class Circle(Object3D):
     def __init__(self, ctx, r=None, d=None):
