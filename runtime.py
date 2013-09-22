@@ -361,8 +361,8 @@ def regPoly(ctx, sides, r):
 
     return Polygon(ctx, points)
 
-def regPrism(ctx, sides, r, h):
-    return regPoly(ctx, sides, r).extrude(ctx, h)
+def regPrism(ctx, sides, r, *args, **kwargs):
+    return regPoly(ctx, sides, r).extrude(ctx, *args, **kwargs)
 
 class Circle(Object3D):
     def __init__(self, ctx, r=None, d=None):
