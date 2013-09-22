@@ -269,6 +269,29 @@ class Polyhedron(Object3D):
 
         raise NotImplementedError
 
+class Torus(Object3D):
+    def __init__(self, ctx, r1=None, r2=None, angle=None, d1=None, d2=None):
+        if d1 is not None:
+            r1 = d1 / 2.
+
+        if d2 is not None:
+            r2 = d2 / 2.
+
+        assert r1 is not None and r2 is not None
+
+        #assert (angle1 is None) == (angle2 is None)
+
+        assert r2 > r1
+        args = [r1, r2 - r1]
+        
+        if angle is not None:
+            args.append(radians(angle))
+
+        #if angle1 is not None:
+        #    args += [radians(angle1), radians(angle2)]
+
+        self.shape = BRepPrimAPI_MakeTorus(*args).Shape()
+
 class Combination(Object3D):
     OP_CLASSES = {
             'add' : BRepAlgoAPI_Fuse,
@@ -543,7 +566,7 @@ rotate = makeTransformFunc('rotate')
 
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
-    [Cube, Cylinder, Sphere, Polyhedron,
+    [Cube, Cylinder, Sphere, Polyhedron, Torus,
     Circle, Polygon, Square])
 
 builtins = dict((f.func_name.lstrip('_'), f)
