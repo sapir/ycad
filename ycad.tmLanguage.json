@@ -20,6 +20,11 @@
             "comment" : "Numeric value"
         },
 
+        {   "match" : "\"(?:.|\\\")+\"",
+            "name" : "string.quoted.double.single-line.ycad",
+            "comment" : "Single-line string",
+        },
+
         {   "match" : "\\bfunc\\s+([A-Za-z][A-Za-z0-9_]*)\\b",
             "name" : "storage.type.function.ycad",
             "comment" : "ycad function definition",
