@@ -20,6 +20,11 @@
             "comment" : "Numeric value"
         },
 
+        {   "begin" : "/\\*",
+            "end" : "\\*/",
+            "name" : "comment.multi-line.ycad",
+        },
+
         {   "match" : "\"(?:.|\\\")+\"",
             "name" : "string.quoted.double.single-line.ycad",
             "comment" : "Single-line string",
