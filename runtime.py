@@ -66,7 +66,7 @@ class Context:
 
         self.modules = {}
 
-        self.textMaker = textimpl.TextMaker()
+        self.textWireMaker = textimpl.TextWireMaker()
 
     def execProgram(self, srcPath, parsedProgram, moduleObjName):
         try:
@@ -458,7 +458,7 @@ class Text(Object3D):
     def __init__(self, ctx, string):
         Object3D.__init__(self)
 
-        self.shape = ctx.textMaker.makeText(string)
+        self.shape = ctx.textWireMaker.makeWire(string)
 
 class LinearExtrusion(Object3D):
     def __init__(self, ctx, obj, h, twist=0, center=False):
