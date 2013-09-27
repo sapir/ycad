@@ -17,6 +17,7 @@ from OCC.GC import *
 from OCC.TopAbs import *
 from OCC.TopExp import *
 from OCC.TopoDS import *
+import textimpl
 
 
 def topoExplorerIter(*args, **kwargs):
@@ -64,6 +65,8 @@ class Context:
         self.blocks = []
 
         self.modules = {}
+
+        self.textMaker = textimpl.TextMaker()
 
     def execProgram(self, srcPath, parsedProgram, moduleObjName):
         try:
@@ -451,6 +454,12 @@ class Square(Polygon):
 
         Polygon.__init__(self, ctx, points)
 
+class Text(Object3D):
+    def __init__(self, ctx, string):
+        Object3D.__init__(self)
+
+        self.shape = ctx.textMaker.makeText(string)
+
 class LinearExtrusion(Object3D):
     def __init__(self, ctx, obj, h, twist=0, center=False):
         if twist != 0:
@@ -567,7 +576,7 @@ rotate = makeTransformFunc('rotate')
 
 _builtinClasses = dict((c.__name__.lower(), c) for c in
     [Cube, Cylinder, Sphere, Polyhedron, Torus,
-    Circle, Polygon, Square])
+    Circle, Polygon, Square, Text])
 
 builtins = dict((f.func_name.lstrip('_'), f)
     for f in [
