@@ -42,6 +42,7 @@ def cairoPathToOccWires(path):
         if instrType == cairo.PATH_MOVE_TO:
             x, y = instrArgs[:2]
             curPt = (x, y)
+            startPt = curPt     # move_to begins a new sub-path
 
         elif instrType == cairo.PATH_LINE_TO:
             x, y = instrArgs[:2]
@@ -66,7 +67,7 @@ def cairoPathToOccWires(path):
             curPt = (x3, y3)
 
         elif instrType == cairo.PATH_CLOSE_PATH:
-            if startPt != curPt:
+            if startPt is not None and curPt is not None and startPt != curPt:
                 wireMaker.Add(make2DLine(curPt, startPt))
                 addedAnything = True
                 curPt = startPt
@@ -78,11 +79,9 @@ def cairoPathToOccWires(path):
                 wireMaker = BRepBuilderAPI_MakeWire()
 
                 addedAnything = False
-                startPt = curPt = None
+            
+            startPt = None
     
-        if startPt is None:
-            startPt = curPt
-
     # we shouldn't have anything left that wasn't yielded, because the last
     # instr should have been a close_path
     assert instrType == cairo.PATH_CLOSE_PATH, \
