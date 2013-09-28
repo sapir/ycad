@@ -132,6 +132,8 @@ def groupNonIntersectingWiresIntoFaces(wiresAndPts):
         faceMaker = BRepBuilderAPI_MakeFace(rootWire)
 
         def _addWireToFace(wire, level):
+            # the wire direction needs to be reversed for every other level,
+            # to correctly bound the inside of the face
             wireToAdd = TopoDS_wire(wire.Reversed()) if level % 2 == 1 else wire
             faceMaker.Add(wireToAdd)
 
