@@ -455,10 +455,13 @@ class Square(Polygon):
         Polygon.__init__(self, ctx, points)
 
 class Text(Object3D):
-    def __init__(self, ctx, string):
+    def __init__(self, ctx, string, fontName="Sans", fontSize=12,
+            bold=False, italic=False):
+
         Object3D.__init__(self)
 
-        self.shape = ctx.textWireMaker.makeWire(string)
+        self.shape = ctx.textWireMaker.makeWire(string,
+            fontName, fontSize, bold=bold, italic=italic)
 
 class LinearExtrusion(Object3D):
     def __init__(self, ctx, obj, h, twist=0, center=False):

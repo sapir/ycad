@@ -171,11 +171,11 @@ class TextWireMaker(object):
         surface = cairo.SVGSurface(None, self._SURFACE_SIZE, self._SURFACE_SIZE)
         self.ctx = cairo.Context(surface)
 
-    def makeWire(self, text):
-        # TODO: allow setting font options
-        self.ctx.select_font_face("Sans", cairo.FONT_SLANT_NORMAL,
-            cairo.FONT_WEIGHT_NORMAL)
-        self.ctx.set_font_size(40)
+    def makeWire(self, text, fontName, fontSize, bold=False, italic=False):
+        slant = cairo.FONT_SLANT_ITALIC if italic else cairo.FONT_SLANT_NORMAL
+        weight = cairo.FONT_WEIGHT_BOLD if bold else cairo.FONT_WEIGHT_NORMAL
+        self.ctx.select_font_face(fontName, slant, weight)
+        self.ctx.set_font_size(fontSize)
 
         path = self._getTextPath(text)
         return cairoPathToOccShape(path)
