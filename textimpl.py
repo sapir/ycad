@@ -5,7 +5,7 @@ from OCC.gp import *
 from OCC.TColgp import *
 from OCC.BRepBuilderAPI import *
 from OCC.GC import *
-from OCC.Geom2dAPI import *
+from OCC.Geom2d import *
 from OCC.TopAbs import *
 from OCC.TopoDS import *
 
@@ -26,8 +26,8 @@ def makeArray1OfPnt2d(pnts):
 def make2DCurve(p0, p1, p2, p3):
     pnts = [gp_Pnt2d(*p) for p in [p0, p1, p2, p3]]
     pntArray = makeArray1OfPnt2d(pnts)
-    curve = Geom2dAPI_PointsToBSpline(pntArray).Curve()
-    return BRepBuilderAPI_MakeEdge2d(curve).Edge()
+    curve = Geom2d_BezierCurve(pntArray)
+    return BRepBuilderAPI_MakeEdge2d(curve.GetHandle()).Edge()
 
 def cairoPathToOccWires(path):
     wireMaker = BRepBuilderAPI_MakeWire()
