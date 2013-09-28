@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import cairo
+import networkx
 from OCC.gp import *
 from OCC.TColgp import *
 from OCC.BRepBuilderAPI import *
@@ -8,6 +9,10 @@ from OCC.GC import *
 from OCC.Geom2d import *
 from OCC.TopAbs import *
 from OCC.TopoDS import *
+from OCC.IntTools import *
+from OCC.BRep import BRep_Tool
+from OCC.ShapeAnalysis import ShapeAnalysis_Surface
+from OCC.Precision import Precision_Confusion
 
 
 
@@ -29,7 +34,7 @@ def make2DCurve(p0, p1, p2, p3):
     curve = Geom2d_BezierCurve(pntArray)
     return BRepBuilderAPI_MakeEdge2d(curve.GetHandle()).Edge()
 
-def cairoPathToOccWires(path):
+def cairoPathToOccWiresAndPts(path):
     wireMaker = BRepBuilderAPI_MakeWire()
 
     startPt = None
@@ -73,7 +78,8 @@ def cairoPathToOccWires(path):
                 curPt = startPt
 
             if addedAnything:
-                yield wireMaker.Wire()
+                assert startPt is not None
+                yield (wireMaker.Wire(), startPt)
 
                 # set up a new, empty wireMaker
                 wireMaker = BRepBuilderAPI_MakeWire()
@@ -87,6 +93,61 @@ def cairoPathToOccWires(path):
     assert instrType == cairo.PATH_CLOSE_PATH, \
         "Last path instruction should be a PATH_CLOSE_PATH!"
 
+def isPointIn2DFace(point, face):
+    faceAna = ShapeAnalysis_Surface(BRep_Tool().Surface(face))
+    uv = faceAna.ValueOfUV(gp_Pnt(point[0], point[1], 0), Precision_Confusion())
+
+    classifier = IntTools_FClass2d(face, Precision_Confusion())
+    return classifier.Perform(uv) == TopAbs_IN
+
+def isPointIn2DWire(point, wire):
+    face = BRepBuilderAPI_MakeFace(wire).Face()
+    return isPointIn2DFace(point, face)
+
+def makeFaceFromWires(wires):
+    wireIter = iter(wires)
+    faceMaker = BRepBuilderAPI_MakeFace(next(wireIter))
+    for wire in wireIter:
+        faceMaker.Add(wire)
+
+    return faceMaker.Face()
+
+def groupNonIntersectingWiresIntoFaces(wiresAndPts):
+    # build directed graph of wires A->B where contains B
+    containmentGraph = networkx.DiGraph()
+
+    # add all wires, even those not participating in edges
+    containmentGraph.add_nodes_from(wire for (wire, _) in wiresAndPts)
+
+    containmentGraph.add_edges_from(
+        (aWire, bWire)
+        for (aWire, _) in wiresAndPts
+        for (bWire, bPt) in wiresAndPts
+        if aWire is not bWire and isPointIn2DWire(bPt, aWire))
+
+    # find wires that aren't contained in any other wires
+    rootWires = [wire for (wire, inDeg) in containmentGraph.in_degree_iter()
+        if inDeg == 0]
+
+    # build faces starting with root wires
+    faces = []
+    for rootWire in rootWires:
+        faceMaker = BRepBuilderAPI_MakeFace(rootWire)
+
+        def _addWireToFace(wire, level):
+            wireToAdd = TopoDS_wire(wire.Reversed()) if level % 2 == 1 else wire
+            faceMaker.Add(wireToAdd)
+
+            for childWire in containmentGraph.successors(wire):
+                _addWireToFace(childWire, level + 1)
+
+        for childWire in containmentGraph.successors(rootWire):
+            _addWireToFace(childWire, 1)
+
+        faces.append(faceMaker.Face())
+
+    return faces
+
 def makeCompound(parts):
     builder = TopoDS_Builder()
     compound = TopoDS_Compound()
@@ -98,8 +159,9 @@ def makeCompound(parts):
     return compound
 
 def cairoPathToOccShape(path):
-    return makeCompound(BRepBuilderAPI_MakeFace(wire).Face()
-        for wire in cairoPathToOccWires(path))
+    wiresAndPts = list(cairoPathToOccWiresAndPts(path))
+    faces = groupNonIntersectingWiresIntoFaces(wiresAndPts)
+    return makeCompound(faces)
 
 
 
