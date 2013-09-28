@@ -87,16 +87,19 @@ def cairoPathToOccWires(path):
     assert instrType == cairo.PATH_CLOSE_PATH, \
         "Last path instruction should be a PATH_CLOSE_PATH!"
 
-def cairoPathToOccShape(path):
+def makeCompound(parts):
     builder = TopoDS_Builder()
     compound = TopoDS_Compound()
     builder.MakeCompound(compound)
 
-    for wire in cairoPathToOccWires(path):
-        face = BRepBuilderAPI_MakeFace(wire).Face()
-        builder.Add(compound, face)
+    for part in parts:
+        builder.Add(compound, part)
 
     return compound
+
+def cairoPathToOccShape(path):
+    return makeCompound(BRepBuilderAPI_MakeFace(wire).Face()
+        for wire in cairoPathToOccWires(path))
 
 
 
