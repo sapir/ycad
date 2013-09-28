@@ -63,6 +63,7 @@ def cairoPathToOccWires(path):
 
             wireMaker.Add(make2DCurve(curPt, (x1, y1), (x2, y2), (x3, y3)))
             addedAnything = True
+            curPt = (x3, y3)
 
         elif instrType == cairo.PATH_CLOSE_PATH:
             if startPt != curPt:
