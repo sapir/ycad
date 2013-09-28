@@ -14,6 +14,7 @@ from OCC.TopoDS import *
 def cairoPathToOccWires(path):
     wireMaker = BRepBuilderAPI_MakeWire()
 
+    startPt = None
     curPt = None
     addedAnything = False
     
@@ -59,6 +60,14 @@ def cairoPathToOccWires(path):
             addedAnything = True
 
         elif instrType == cairo.PATH_CLOSE_PATH:
+            if startPt != curPt:
+                p1 = gp_Pnt2d(*curPt)
+                p2 = gp_Pnt2d(*startPt)
+                edge = BRepBuilderAPI_MakeEdge2d(p1, p2).Edge()
+                wireMaker.Add(edge)
+                addedAnything = True
+                curPt = startPt
+
             if addedAnything:
                 yield wireMaker.Wire()
 
@@ -66,7 +75,11 @@ def cairoPathToOccWires(path):
                 wireMaker = BRepBuilderAPI_MakeWire()
 
                 addedAnything = False
+                startPt = curPt = None
     
+        if startPt is None:
+            startPt = curPt
+
     # we shouldn't have anything left that wasn't yielded, because the last
     # instr should have been a close_path
     assert instrType == cairo.PATH_CLOSE_PATH, \
