@@ -122,28 +122,28 @@ def groupNonIntersectingWiresIntoFaces(wiresAndPts):
         for (bWire, bPt) in wiresAndPts
         if aWire is not bWire and isPointIn2DWire(bPt, aWire))
 
-    # find wires that aren't contained in any other wires
-    rootWires = [wire for (wire, inDeg) in containmentGraph.in_degree_iter()
-        if inDeg == 0]
-
-    # build faces starting with root wires
     faces = []
-    for rootWire in rootWires:
-        faceMaker = BRepBuilderAPI_MakeFace(rootWire)
+    while True:
+        # find wires that aren't contained in any other wires
+        rootWires = [wire
+            for (wire, inDeg) in containmentGraph.in_degree_iter()
+            if inDeg == 0]
 
-        def _addWireToFace(wire, level):
-            # the wire direction needs to be reversed for every other level,
-            # to correctly bound the inside of the face
-            wireToAdd = TopoDS_wire(wire.Reversed()) if level % 2 == 1 else wire
-            faceMaker.Add(wireToAdd)
+        if not rootWires:
+            # we're done here
+            break
 
-            for childWire in containmentGraph.successors(wire):
-                _addWireToFace(childWire, level + 1)
+        # build faces from the root wires + their inner loops. then remove
+        # all of those, so that in the next iteration, any inner inner loops
+        # can become root wires.
+        for rootWire in rootWires:
+            faceMaker = BRepBuilderAPI_MakeFace(rootWire)
+            for childWire in containmentGraph.successors(rootWire):
+                faceMaker.Add(TopoDS_wire(childWire.Reversed()))
+                containmentGraph.remove_node(childWire)
 
-        for childWire in containmentGraph.successors(rootWire):
-            _addWireToFace(childWire, 1)
-
-        faces.append(faceMaker.Face())
+            containmentGraph.remove_node(rootWire)
+            faces.append(faceMaker.Face())
 
     return faces
 
