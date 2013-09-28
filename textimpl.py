@@ -118,5 +118,10 @@ class TextWireMaker(object):
 
     def _getTextPath(self, text):
         self.ctx.new_path()
+
         self.ctx.text_path(text)
+
+        # invert y direction, to match coordinates used for 3D
+        self.ctx.scale(1, -1)
+
         return self.ctx.copy_path()
