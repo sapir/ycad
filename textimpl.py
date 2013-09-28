@@ -9,9 +9,7 @@ from OCC.GC import *
 from OCC.Geom2d import *
 from OCC.TopAbs import *
 from OCC.TopoDS import *
-from OCC.IntTools import *
-from OCC.BRep import BRep_Tool
-from OCC.ShapeAnalysis import ShapeAnalysis_Surface
+from OCC.BRepClass import *
 from OCC.Precision import Precision_Confusion
 
 
@@ -94,11 +92,10 @@ def cairoPathToOccWiresAndPts(path):
         "Last path instruction should be a PATH_CLOSE_PATH!"
 
 def isPointIn2DFace(point, face):
-    faceAna = ShapeAnalysis_Surface(BRep_Tool().Surface(face))
-    uv = faceAna.ValueOfUV(gp_Pnt(point[0], point[1], 0), Precision_Confusion())
+    classifier = BRepClass_FClassifier(BRepClass_FaceExplorer(face),
+        gp_Pnt2d(*point), Precision_Confusion())
 
-    classifier = IntTools_FClass2d(face, Precision_Confusion())
-    return classifier.Perform(uv) == TopAbs_IN
+    return classifier.State() == TopAbs_IN
 
 def isPointIn2DWire(point, wire):
     face = BRepBuilderAPI_MakeFace(wire).Face()
