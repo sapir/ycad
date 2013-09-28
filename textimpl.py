@@ -11,6 +11,24 @@ from OCC.TopoDS import *
 
 
 
+def make2DLine(p1, p2):
+    gpP1 = gp_Pnt2d(*p1)
+    gpP2 = gp_Pnt2d(*p2)
+    return BRepBuilderAPI_MakeEdge2d(gpP1, gpP2).Edge()
+
+def makeArray1OfPnt2d(pnts):
+    arr = TColgp_Array1OfPnt2d(1, len(pnts))
+    for i, p in enumerate(pnts):
+        arr.SetValue(i + 1, p)
+
+    return arr
+
+def make2DCurve(p0, p1, p2, p3):
+    pnts = [gp_Pnt2d(*p) for p in [p0, p1, p2, p3]]
+    pntArray = makeArray1OfPnt2d(pnts)
+    curve = Geom2dAPI_PointsToBSpline(pntArray).Curve()
+    return BRepBuilderAPI_MakeEdge2d(curve).Edge()
+
 def cairoPathToOccWires(path):
     wireMaker = BRepBuilderAPI_MakeWire()
 
@@ -31,10 +49,7 @@ def cairoPathToOccWires(path):
             if curPt is None:
                 curPt = (x, y)
             else:
-                p1 = gp_Pnt2d(curPt[0], curPt[1])
-                p2 = gp_Pnt2d(x, y)
-                edge = BRepBuilderAPI_MakeEdge2d(p1, p2).Edge()
-                wireMaker.Add(edge)
+                wireMaker.Add(make2DLine(curPt, (x, y)))
                 addedAnything = True
 
                 curPt = (x, y)
@@ -46,25 +61,12 @@ def cairoPathToOccWires(path):
                 curPt = (x1, y1)
                 raise NotImplementedError
 
-            x0, y0 = curPt
-            pnts = [gp_Pnt2d(x0, y0), gp_Pnt2d(x1, y1), gp_Pnt2d(x2, y2),
-                gp_Pnt2d(x3, y3)]
-            
-            pntArray = TColgp_Array1OfPnt2d(1, len(pnts))
-            for i, p in enumerate(pnts):
-                pntArray.SetValue(i + 1, p)
-            curve = Geom2dAPI_PointsToBSpline(pntArray).Curve()
-
-            edge = BRepBuilderAPI_MakeEdge2d(curve).Edge()
-            wireMaker.Add(edge)
+            wireMaker.Add(make2DCurve(curPt, (x1, y1), (x2, y2), (x3, y3)))
             addedAnything = True
 
         elif instrType == cairo.PATH_CLOSE_PATH:
             if startPt != curPt:
-                p1 = gp_Pnt2d(*curPt)
-                p2 = gp_Pnt2d(*startPt)
-                edge = BRepBuilderAPI_MakeEdge2d(p1, p2).Edge()
-                wireMaker.Add(edge)
+                wireMaker.Add(make2DLine(curPt, startPt))
                 addedAnything = True
                 curPt = startPt
 
