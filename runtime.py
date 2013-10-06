@@ -612,6 +612,8 @@ def run(srcPath, parsedProgram, outputFilename):
             # create an empty file
             pass
     else:
+        obj._tesselate(0.05)
+
         stl_writer = StlAPI_Writer()
         stl_writer.SetASCIIMode(False)
         stl_writer.Write(obj.shape, outputFilename)
