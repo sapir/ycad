@@ -9,6 +9,7 @@ import copy
 import os
 import numpy as np
 from OCC.gp import *
+from OCC.BRepMesh import *
 from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepAlgoAPI import *
@@ -219,6 +220,9 @@ class Object3D(object):
 
     def revolve(self, ctx, *args, **kwargs):
         return Revolution(ctx, self, *args, **kwargs)
+
+    def _tesselate(self, tolerance):
+        BRepMesh_IncrementalMesh(self.shape, tolerance)
 
 class Cube(Object3D):
     def __init__(self, ctx, s):
