@@ -494,15 +494,22 @@ class LinearExtrusion(Object3D):
             profile = TopoDS_wire(wire)
             break
 
-        # TODO: create surface with angles etc. with enough twist
-        # TODO: check that angle changles linearly with Z
-        auxSurf = Geom_BezierSurface(TColgp_Array2OfPnt(1, 2, 1, 2))
-        auxSurf.SetPole(1, 1, gp_Pnt(0, 0, 0))
-        auxSurf.SetPole(2, 1, gp_Pnt(1, 0, 0))
-        auxSurf.SetPole(1, 2, gp_Pnt(0, 0, height))
-        auxSurf.SetPole(2, 2, gp_Pnt(0, 1, height))
+        # split height into segments. each segment will twist no more than
+        # 90 degrees.
+        numTwistSegments = int(abs(twist) // 90 + 1)
+        segmentHeight = float(height) / numTwistSegments
+        segmentTwistRad = radians(float(twist) / numTwistSegments)
+
+        auxSurf = Geom_BezierSurface(TColgp_Array2OfPnt(1, 2, 1, numTwistSegments + 1))
+        for i in xrange(numTwistSegments + 1):
+            z = segmentHeight * i
+            angle = segmentTwistRad * i
+            auxSurf.SetPole(1, i + 1, gp_Pnt(0, 0, z))
+            auxSurf.SetPole(2, i + 1, gp_Pnt(cos(angle), sin(angle), z))
+
         auxSurfHandle = Handle_Geom_Surface()
         auxSurfHandle.Set(auxSurf)
+
         auxFace = BRepBuilderAPI_MakeFace(auxSurfHandle, 0, 1, 0, 1, Precision_Confusion()).Face()
 
         edge = BRepBuilderAPI_MakeEdge(
