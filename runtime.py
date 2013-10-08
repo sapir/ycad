@@ -325,27 +325,32 @@ class Combination(Object3D):
         self.op = op
         self.objs = objs
 
-        opClass = self.OP_CLASSES[self.op]
         if self.objs:
-            # BRepAlgoAPI seems not to like handling compounds containing
-            # solids so we convert them to single solids. (docs say that
-            # compsolids aren't handled either, so we fix those, too).
-            def fixCompounds(shape):
-                if shape.ShapeType() == TopAbs_COMPSOLID:
-                    return self.compSolidToSolid(compSolid)
-
-                elif shape.ShapeType() == TopAbs_COMPOUND:
-                    compoundType = self._getCompoundType(shape)
-                    if compoundType == TopAbs_SOLID:
-                        return self.consolidateCompoundSolids(shape)
-
-                return shape
-
-            shapes = [fixCompounds(obj.shape) for obj in objs
-                if obj.shape is not None]
-            self.shape = reduce(lambda a, b: opClass(a, b).Shape(), shapes)
+            self.shape = self.makeShape(op, objs)
         else:
             self.shape = None
+
+    @staticmethod
+    def makeShape(op, objs):
+        opClass = Combination.OP_CLASSES[op]
+
+        # BRepAlgoAPI seems not to like handling compounds containing
+        # solids so we convert them to single solids. (docs say that
+        # compsolids aren't handled either, so we fix those, too).
+        def fixCompounds(shape):
+            if shape.ShapeType() == TopAbs_COMPSOLID:
+                return Combination.compSolidToSolid(compSolid)
+
+            elif shape.ShapeType() == TopAbs_COMPOUND:
+                compoundType = Combination._getCompoundType(shape)
+                if compoundType == TopAbs_SOLID:
+                    return Combination.consolidateCompoundSolids(shape)
+
+            return shape
+
+        shapes = [fixCompounds(obj.shape) for obj in objs
+            if obj.shape is not None]
+        return reduce(lambda a, b: opClass(a, b).Shape(), shapes)
 
     @staticmethod
     def fromBlock(ctx, op, block, **kwargs):
