@@ -511,11 +511,11 @@ class LinearExtrusion(Object3D):
             for face in faces)
 
     def _twistFace(self, face, height, twist):
+        # first sort face's wires into inner and outer wires.
         # baseShape should be contiguous and 2D, so there should be one
         # outer wire and possibly one or more inner wires.
         outerWires = []
         innerWires = []
-        # TODO: iterate over direct children, not all descendants
         for wire in topoExplorerIter(face.Oriented(TopAbs_FORWARD), TopAbs_WIRE):
             wire = TopoDS_wire(wire)
 
@@ -524,12 +524,16 @@ class LinearExtrusion(Object3D):
             else:
                 outerWires.append(wire)
 
-        # TODO: handle multiple wires in face
         assert len(outerWires) == 1
-        if len(innerWires) > 0: raise NotImplementedError
 
-        profile = outerWires[0]
-        return self._twistProfileWire(profile, height, twist)
+        twistedOuter = self._twistProfileWire(outerWires[0], height, twist)
+        if len(innerWires) > 0:
+            twistedInners = [self._twistProfileWire(wire, height, twist)
+                for wire in innerWires]
+
+            return Combination.makeShape('sub', [twistedOuter] + twistedInners)
+        else:
+            return twistedOuter
 
     def _twistProfileWire(self, profile, height, twist):
         # split height into segments. each segment will twist no more than
