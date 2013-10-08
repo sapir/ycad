@@ -498,7 +498,10 @@ class LinearExtrusion(Object3D):
             baseShape, gp_Vec(0, 0, height), True).Shape()
 
     def _makeTwisted(self, baseShape, height, twist):
-        self.shape = self._twistFace(baseShape, height, twist)
+        faces = list(topoExplorerIter(baseShape, TopAbs_FACE))
+        if len(faces) != 1: raise NotImplementedError
+        face = TopoDS_face(faces[0])
+        self.shape = self._twistFace(face, height, twist)
 
     def _twistFace(self, face, height, twist):
         # TODO: handle multiple wires in face
