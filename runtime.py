@@ -483,8 +483,8 @@ class Text(Object3D):
 
 class LinearExtrusion(Object3D):
     def __init__(self, ctx, obj, h, twist=0, center=False):
-
         Object3D.__init__(self)
+
         if twist == 0:
             self._makeStraight(obj.shape, h)
         else:
