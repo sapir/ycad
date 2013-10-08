@@ -498,11 +498,14 @@ class LinearExtrusion(Object3D):
             baseShape, gp_Vec(0, 0, height), True).Shape()
 
     def _makeTwisted(self, baseShape, height, twist):
-        # TODO: handle multiple wires in face
-        for wire in topoExplorerIter(baseShape, TopAbs_WIRE):
-            profile = TopoDS_wire(wire)
-            break
+        self.shape = self._twistFace(baseShape, height, twist)
 
+    def _twistFace(self, face, height, twist):
+        # TODO: handle multiple wires in face
+        for wire in topoExplorerIter(face, TopAbs_WIRE):
+            return self._twistProfileWire(TopoDS_wire(wire), height, twist)
+
+    def _twistProfileWire(self, profile, height, twist):
         # split height into segments. each segment will twist no more than
         # 90 degrees.
         numTwistSegments = int(abs(twist) // 90 + 1)
@@ -533,10 +536,10 @@ class LinearExtrusion(Object3D):
             raise StandardError(
                 "failed setting twisted surface-normal for PipeShell")
 
-        pipeShellMaker.Add(wire)
+        pipeShellMaker.Add(profile)
         pipeShellMaker.Build()
         pipeShellMaker.MakeSolid()
-        self.shape = pipeShellMaker.Shape()
+        return pipeShellMaker.Shape()
 
 class Revolution(Object3D):
     def __init__(self, ctx, obj, angle=360):
