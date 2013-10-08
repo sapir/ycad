@@ -13,11 +13,16 @@ from OCC.BRepMesh import *
 from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepAlgoAPI import *
+from OCC.BRepOffsetAPI import *
 from OCC.StlAPI import StlAPI_Reader, StlAPI_Writer
 from OCC.GC import *
+from OCC.GCE2d import *
+from OCC.Geom import *
+from OCC.TColgp import *
 from OCC.TopAbs import *
 from OCC.TopExp import *
 from OCC.TopoDS import *
+from OCC.Precision import Precision_Confusion
 import textimpl
 
 
@@ -469,12 +474,44 @@ class Text(Object3D):
 
 class LinearExtrusion(Object3D):
     def __init__(self, ctx, obj, h, twist=0, center=False):
-        if twist != 0:
-            raise NotImplementedError("twist not yet supported")
 
         Object3D.__init__(self)
-        self.shape = BRepPrimAPI_MakePrism(
-            obj.shape, gp_Vec(0, 0, h), True).Shape()
+        if twist == 0:
+            self.shape = BRepPrimAPI_MakePrism(
+                obj.shape, gp_Vec(0, 0, h), True).Shape()
+        else:
+            # TODO: handle multiple wires in face
+            for wire in topoExplorerIter(obj.shape, TopAbs_WIRE):
+                profile = TopoDS_wire(wire)
+                break
+
+            # TODO: create surface with angles etc. with enough twist
+            # TODO: check that angle changles linearly with Z
+            auxSurf = Geom_BezierSurface(TColgp_Array2OfPnt(1, 2, 1, 2))
+            auxSurf.SetPole(1, 1, gp_Pnt(0, 0, 0))
+            auxSurf.SetPole(2, 1, gp_Pnt(1, 0, 0))
+            auxSurf.SetPole(1, 2, gp_Pnt(0, 0, h))
+            auxSurf.SetPole(2, 2, gp_Pnt(0, 1, h))
+            auxSurfHandle = Handle_Geom_Surface()
+            auxSurfHandle.Set(auxSurf)
+            auxFace = BRepBuilderAPI_MakeFace(auxSurfHandle, 0, 1, 0, 1, Precision_Confusion()).Face()
+
+            edge = BRepBuilderAPI_MakeEdge(
+                GCE2d_MakeSegment(gp_Pnt2d(0, 0), gp_Pnt2d(0, 1)).Value(),
+                auxSurfHandle).Edge()
+            spine = BRepBuilderAPI_MakeWire(edge).Wire()
+
+            pipeShellMaker = BRepOffsetAPI_MakePipeShell(spine)
+            
+            res = pipeShellMaker.SetMode(auxFace)
+            if res != 1:
+                raise StandardError(
+                    "failed setting twisted surface-normal for PipeShell")
+
+            pipeShellMaker.Add(wire)
+            pipeShellMaker.Build()
+            pipeShellMaker.MakeSolid()
+            self.shape = pipeShellMaker.Shape()
 
         if center:
             self._moveApply([0, 0, -h / 2.])
