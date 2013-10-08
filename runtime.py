@@ -9,11 +9,13 @@ import copy
 import os
 import numpy as np
 from OCC.gp import *
+from OCC.BRep import BRep_Builder
 from OCC.BRepMesh import *
 from OCC.BRepBuilderAPI import *
 from OCC.BRepPrimAPI import *
 from OCC.BRepAlgoAPI import *
 from OCC.BRepOffsetAPI import *
+from OCC.BRepTopAdaptor import BRepTopAdaptor_FClass2d
 from OCC.StlAPI import StlAPI_Reader, StlAPI_Writer
 from OCC.GC import *
 from OCC.GCE2d import *
@@ -22,7 +24,7 @@ from OCC.TColgp import *
 from OCC.TopAbs import *
 from OCC.TopExp import *
 from OCC.TopoDS import *
-from OCC.Precision import Precision_Confusion
+from OCC.Precision import Precision_Confusion, Precision_PConfusion
 import textimpl
 
 
@@ -32,6 +34,13 @@ def topoExplorerIter(*args, **kwargs):
     while exp.More():
         yield exp.Current()
         exp.Next()
+
+def isInnerWireOfFace(wire, face):
+    # recipe from http://opencascade.wikidot.com/recipes
+    newface = TopoDS_face(face.EmptyCopied().Oriented(TopAbs_FORWARD))
+    BRep_Builder().Add(newface, wire)
+    FClass2d = BRepTopAdaptor_FClass2d(newface, Precision_PConfusion())
+    return FClass2d.PerformInfinitePoint() != TopAbs_OUT
 
 
 class ReturnException(BaseException):
