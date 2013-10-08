@@ -326,12 +326,13 @@ class Combination(Object3D):
         self.objs = objs
 
         if self.objs:
-            self.shape = self.makeShape(op, objs)
+            shapes = [obj.shape for obj in objs if obj.shape is not None]
+            self.shape = self.makeShape(op, shapes)
         else:
             self.shape = None
 
     @staticmethod
-    def makeShape(op, objs):
+    def makeShape(op, shapes):
         opClass = Combination.OP_CLASSES[op]
 
         # BRepAlgoAPI seems not to like handling compounds containing
@@ -348,9 +349,8 @@ class Combination(Object3D):
 
             return shape
 
-        shapes = [fixCompounds(obj.shape) for obj in objs
-            if obj.shape is not None]
-        return reduce(lambda a, b: opClass(a, b).Shape(), shapes)
+        fixedShapes = [fixCompounds(shape) for shape in shapes]
+        return reduce(lambda a, b: opClass(a, b).Shape(), fixedShapes)
 
     @staticmethod
     def fromBlock(ctx, op, block, **kwargs):
