@@ -498,10 +498,12 @@ class LinearExtrusion(Object3D):
             baseShape, gp_Vec(0, 0, height), True).Shape()
 
     def _makeTwisted(self, baseShape, height, twist):
-        faces = list(topoExplorerIter(baseShape, TopAbs_FACE))
-        if len(faces) != 1: raise NotImplementedError
-        face = TopoDS_face(faces[0])
-        self.shape = self._twistFace(face, height, twist)
+        faces = [TopoDS_face(face)
+            for face in topoExplorerIter(baseShape, TopAbs_FACE)]
+
+        self.shape = textimpl.makeCompound(
+            self._twistFace(face, height, twist)
+            for face in faces)
 
     def _twistFace(self, face, height, twist):
         # baseShape should be contiguous and 2D, so there should be one
