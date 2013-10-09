@@ -194,7 +194,9 @@ class Object3D(object):
 
     def scale(self, ctx, vec=None, x=1, y=1, z=1):
         if vec is not None:
-            if len(vec) == 3:
+            if isinstance(vec, float):
+                x = y = z = vec
+            elif len(vec) == 3:
                 x, y, z = vec
             elif len(vec) == 2:
                 x, y = vec
