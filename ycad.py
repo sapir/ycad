@@ -7,9 +7,6 @@ import argparse
 import time
 from subprocess import check_call
 
-import grammar
-import runtime
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -24,10 +21,16 @@ if __name__ == '__main__':
     
     startTime = time.time()
 
+    print('Initializing...', file=sys.stderr)
+    import grammar
+    import runtime
+    timeAfterInit = time.time()
+    print('Initialization time: {0:.2f}s'.format(timeAfterInit - startTime))
+
     print('Parsing...', file=sys.stderr)
     parsed = grammar.parseFile(args.filename)
     timeAfterParsing = time.time()
-    print('Parse time: {0:.2f}s'.format(timeAfterParsing - startTime))
+    print('Parse time: {0:.2f}s'.format(timeAfterParsing - timeAfterInit))
 
     print('Running...', file=sys.stderr)
     runtime.run(os.path.abspath(args.filename), parsed, args.output)
