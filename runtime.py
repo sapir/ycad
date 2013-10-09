@@ -241,7 +241,7 @@ class Object3D(object):
         BRepMesh_IncrementalMesh(self.shape, tolerance)
 
 class Cube(Object3D):
-    def __init__(self, ctx, s):
+    def __init__(self, ctx, s, center=False):
         Object3D.__init__(self, basename='cube')
 
         if isinstance(s, float):
@@ -250,6 +250,9 @@ class Cube(Object3D):
             x, y, z = s
 
         self.shape = BRepPrimAPI_MakeBox(x, y, z).Shape()
+
+        if center:
+            self._moveApply([-x / 2., -y / 2., -z / 2.])
 
 class Cylinder(Object3D):
     def __init__(self, ctx, h, d=None, d1=None, d2=None, r=None,
