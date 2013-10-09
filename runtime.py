@@ -685,7 +685,7 @@ builtins = dict((f.func_name.lstrip('_'), f)
         _abs, _ceil, _exp, _floor, _ln, _len, _log, _max, _min, _norm,
         _pow, _round, _sign, _sqrt,
 
-        move, scale, rotate, extrude])
+        move, scale, rotate, extrude, revolve])
 builtins.update(_builtinClasses)
 
 builtins['add'] = partial(Combination.fromBlock, op='add')
