@@ -5,7 +5,6 @@ import sys
 import os
 import argparse
 import time
-from subprocess import check_call
 
 
 if __name__ == '__main__':
