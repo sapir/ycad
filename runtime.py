@@ -192,14 +192,14 @@ class Object3D(object):
         transform.SetTranslation(gp_Vec(*vec))
         return self.withTransform(transform)
 
-    def scale(self, ctx, vec=None, x=1, y=1, z=1):
-        if vec is not None:
-            if isinstance(vec, float):
-                x = y = z = vec
-            elif len(vec) == 3:
-                x, y, z = vec
-            elif len(vec) == 2:
-                x, y = vec
+    def scale(self, ctx, size=None, x=1, y=1, z=1):
+        if size is not None:
+            if isinstance(size, float):
+                x = y = z = size
+            elif len(size) == 3:
+                x, y, z = size
+            elif len(size) == 2:
+                x, y = size
                 z = 1
 
         transform = gp_GTrsf(
