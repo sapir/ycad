@@ -321,7 +321,7 @@ class ImportStmt(Stmt):
             raise NotImplementedError
 
     def __repr__(self):
-        return 'import {0}'.format('.'.join(pkgPath))
+        return 'import {0}'.format('.'.join(self.pkgPath))
 
     def exec_(self, ctx):
         assert len(self.pkgPath) == 1
