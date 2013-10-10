@@ -27,13 +27,17 @@ if __name__ == '__main__':
     print('Initialization time: {0:.2f}s'.format(timeAfterInit - startTime))
 
     print('Parsing...', file=sys.stderr)
-    parsed = grammar.parseFile(args.filename)
-    timeAfterParsing = time.time()
-    print('Parse time: {0:.2f}s'.format(timeAfterParsing - timeAfterInit))
+    try:
+        parsed = grammar.parseFile(args.filename)
+    finally:
+        timeAfterParsing = time.time()
+        print('Parse time: {0:.2f}s'.format(timeAfterParsing - timeAfterInit))
 
     print('Running...', file=sys.stderr)
-    runtime.run(os.path.abspath(args.filename), parsed, args.output)
-    endTime = time.time()
-    
-    print('Execution time: {0:.2f}s'.format(endTime - timeAfterParsing))
-    print('Total time: {0:.2f}s'.format(endTime - startTime))
+    try:
+        runtime.run(os.path.abspath(args.filename), parsed, args.output)
+    finally:
+        endTime = time.time()
+
+        print('Execution time: {0:.2f}s'.format(endTime - timeAfterParsing))
+        print('Total time: {0:.2f}s'.format(endTime - startTime))
