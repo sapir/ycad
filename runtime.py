@@ -8,24 +8,25 @@ from math import *
 import copy
 import os
 import numpy as np
-from OCC.gp import *
-from OCC.BRep import BRep_Builder
-from OCC.BRepMesh import *
-from OCC.BRepBuilderAPI import *
-from OCC.BRepPrimAPI import *
-from OCC.BRepAlgoAPI import *
-from OCC.BRepOffsetAPI import *
-from OCC.BRepTopAdaptor import BRepTopAdaptor_FClass2d
-from OCC.StlAPI import StlAPI_Reader, StlAPI_Writer
-from OCC.GC import *
-from OCC.GCE2d import *
-from OCC.Geom import *
-from OCC.TColgp import *
-from OCC.TopAbs import *
-from OCC.TopExp import *
-from OCC.TopoDS import *
-from OCC.Precision import Precision_Confusion, Precision_PConfusion
-import textimpl
+# from OCC.gp import *
+# from OCC.BRep import BRep_Builder
+# from OCC.BRepMesh import *
+# from OCC.BRepBuilderAPI import *
+# from OCC.BRepPrimAPI import *
+# from OCC.BRepAlgoAPI import *
+# from OCC.BRepOffsetAPI import *
+# from OCC.BRepTopAdaptor import BRepTopAdaptor_FClass2d
+# from OCC.StlAPI import StlAPI_Reader, StlAPI_Writer
+# from OCC.GC import *
+# from OCC.GCE2d import *
+# from OCC.Geom import *
+# from OCC.TColgp import *
+# from OCC.TopAbs import *
+# from OCC.TopExp import *
+# from OCC.TopoDS import *
+# from OCC.Precision import Precision_Confusion, Precision_PConfusion
+# import textimpl
+import _ycad
 
 
 def topoExplorerIter(*args, **kwargs):
@@ -81,7 +82,7 @@ class Context:
 
         self.modules = {}
 
-        self.textShapeMaker = textimpl.TextShapeMaker()
+        # self.textShapeMaker = textimpl.TextShapeMaker()
 
     def execProgram(self, srcPath, parsedProgram, moduleObjName):
         try:
@@ -164,18 +165,18 @@ class Object3D(object):
         self.shape = shape
         self._name = _autoname(basename) if name is None else name
 
-    def applyTransform(self, transform, apiClass=BRepBuilderAPI_Transform,
-            copy=False):
+    # def applyTransform(self, transform, apiClass=BRepBuilderAPI_Transform,
+    #         copy=False):
 
-        if self.shape is None:
-            return
+    #     if self.shape is None:
+    #         return
 
-        self.shape = apiClass(self.shape, transform, copy).Shape()
+    #     self.shape = apiClass(self.shape, transform, copy).Shape()
 
-    def withTransform(self, transform, apiClass=BRepBuilderAPI_Transform):
-        newObj = copy.copy(self)
-        newObj.applyTransform(transform, apiClass, copy=True)
-        return newObj
+    # def withTransform(self, transform, apiClass=BRepBuilderAPI_Transform):
+    #     newObj = copy.copy(self)
+    #     newObj.applyTransform(transform, apiClass, copy=True)
+    #     return newObj
 
     def _moveApply(self, vec):
         transform = gp_Trsf()
@@ -238,7 +239,8 @@ class Object3D(object):
         return Revolution(ctx, self, *args, **kwargs)
 
     def _tesselate(self, tolerance):
-        BRepMesh_IncrementalMesh(self.shape, tolerance)
+        pass
+        # BRepMesh_IncrementalMesh(self.shape, tolerance)
 
 class Cube(Object3D):
     def __init__(self, ctx, s, center=False):
@@ -249,7 +251,7 @@ class Cube(Object3D):
         else:
             x, y, z = s
 
-        self.shape = BRepPrimAPI_MakeBox(x, y, z).Shape()
+        self.shape = _ycad.box(x, y, z)
 
         if center:
             self._moveApply([-x / 2., -y / 2., -z / 2.])
@@ -320,9 +322,9 @@ class Torus(Object3D):
 
 class Combination(Object3D):
     OP_CLASSES = {
-            'add' : BRepAlgoAPI_Fuse,
-            'sub' : BRepAlgoAPI_Cut,
-            'mul' : BRepAlgoAPI_Common,
+            # 'add' : BRepAlgoAPI_Fuse,
+            # 'sub' : BRepAlgoAPI_Cut,
+            # 'mul' : BRepAlgoAPI_Common,
         }
 
     def __init__(self, ctx, op, objs, name=None):
@@ -338,6 +340,7 @@ class Combination(Object3D):
 
     @staticmethod
     def makeShape(op, shapes):
+        return shapes[0]
         opClass = Combination.OP_CLASSES[op]
 
         # BRepAlgoAPI seems not to like handling compounds containing
@@ -711,6 +714,4 @@ def run(srcPath, parsedProgram, outputFilename):
     else:
         obj._tesselate(0.05)
 
-        stl_writer = StlAPI_Writer()
-        stl_writer.SetASCIIMode(False)
-        stl_writer.Write(obj.shape, outputFilename)
+        _ycad.writeSTL(obj.shape, outputFilename, 0.05)
