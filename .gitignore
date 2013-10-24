@@ -40,3 +40,4 @@ nosetests.xml
 brlcad/*.c
 temp.g
 *.stl
+_ycad.cpp
