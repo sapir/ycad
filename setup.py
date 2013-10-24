@@ -10,6 +10,7 @@ setup(
             sources=["*.pyx", "_ycad_helpers.cpp"],
             language="c++",
             include_dirs=['/usr/local/include/oce'],
-            libraries=['TKG3d', 'TKBRep', 'TKPrim', 'TKSTL'],
+            libraries=['TK{0}'.format(lib)
+                for lib in 'G3d BRep Prim BO STL'.split()]
         ),
     ]))
