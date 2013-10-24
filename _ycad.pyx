@@ -3,10 +3,73 @@ ctypedef char* Standard_CString
 
 cdef extern from "gp_Pnt.hxx":
     cdef cppclass gp_Pnt:
+        gp_Pnt()
         gp_Pnt(int, int, int)
         Standard_Real X()
         Standard_Real Y()
         Standard_Real Z()
+
+cdef extern from "gp_Vec.hxx":
+    cdef cppclass gp_Vec:
+        gp_Vec()
+        gp_Vec(Standard_Real, Standard_Real, Standard_Real)
+
+cdef extern from "gp_Dir.hxx":
+    cdef cppclass gp_Dir:
+        gp_Dir()
+        gp_Dir(gp_Vec)
+        gp_Dir(gp_XYZ)
+        gp_Dir(Standard_Real, Standard_Real, Standard_Real)
+
+cdef extern from "gp_Mat.hxx":
+    cdef cppclass gp_Mat:
+        gp_Mat(Standard_Real, Standard_Real, Standard_Real,
+            Standard_Real, Standard_Real, Standard_Real,
+            Standard_Real, Standard_Real, Standard_Real)
+
+cdef extern from "gp_Ax1.hxx":
+    cdef cppclass gp_Ax1:
+        gp_Ax1()
+        gp_Ax1(gp_Pnt, gp_Dir)
+
+cdef extern from "gp_XYZ.hxx":
+    cdef cppclass gp_XYZ:
+        gp_XYZ()
+
+cdef extern from "gp_Trsf.hxx":
+    cdef cppclass gp_Trsf:
+        gp_Trsf()
+        void SetRotation(gp_Ax1, Standard_Real)
+        void SetTranslation(gp_Vec)
+
+cdef extern from "gp_GTrsf.hxx":
+    cdef cppclass gp_GTrsf:
+        gp_GTrsf()
+        gp_GTrsf(gp_Mat, gp_XYZ)
+        void SetVectorialPart(gp_Mat)
+        void SetTranslationPart(gp_XYZ)
+
+
+cdef class Transform:
+    cdef gp_Trsf obj
+
+    def setTranslation(self, vec):
+        x, y, z = vec
+        self.obj.SetTranslation(gp_Vec(x, y, z))
+
+    def setRotation(self, axis, float angle):
+        ax, ay, az = axis
+        self.obj.SetRotation(gp_Ax1(gp_Pnt(), gp_Dir(ax, ay, az)), angle)
+
+cdef class GenTransform:
+    cdef gp_GTrsf obj
+
+    def setScale(self, sx, sy, sz):
+        self.obj.SetVectorialPart(gp_Mat(
+            sx, 0, 0,
+            0, sy, 0,
+            0, 0, sz))
+
 
 cdef extern from "TopoDS_Shape.hxx":
     cdef cppclass TopoDS_Shape:
