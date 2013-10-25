@@ -26,6 +26,7 @@ import numpy as np
 # from OCC.TopoDS import *
 # from OCC.Precision import Precision_Confusion, Precision_PConfusion
 # import textimpl
+import operator
 import _ycad
 
 
@@ -322,12 +323,6 @@ class Torus(Object3D):
         self.shape = BRepPrimAPI_MakeTorus(*args).Shape()
 
 class Combination(Object3D):
-    OP_CLASSES = {
-            # 'add' : BRepAlgoAPI_Fuse,
-            # 'sub' : BRepAlgoAPI_Cut,
-            # 'mul' : BRepAlgoAPI_Common,
-        }
-
     def __init__(self, ctx, op, objs, name=None):
         Object3D.__init__(self, name=name, basename='comb')
         self.op = op
@@ -341,25 +336,24 @@ class Combination(Object3D):
 
     @staticmethod
     def makeShape(op, shapes):
-        return shapes[0]
-        opClass = Combination.OP_CLASSES[op]
+        opFunc = getattr(operator, op)
 
-        # BRepAlgoAPI seems not to like handling compounds containing
-        # solids so we convert them to single solids. (docs say that
-        # compsolids aren't handled either, so we fix those, too).
-        def fixCompounds(shape):
-            if shape.ShapeType() == TopAbs_COMPSOLID:
-                return Combination.compSolidToSolid(compSolid)
+        # # BRepAlgoAPI seems not to like handling compounds containing
+        # # solids so we convert them to single solids. (docs say that
+        # # compsolids aren't handled either, so we fix those, too).
+        # def fixCompounds(shape):
+        #     if shape.ShapeType() == TopAbs_COMPSOLID:
+        #         return Combination.compSolidToSolid(compSolid)
 
-            elif shape.ShapeType() == TopAbs_COMPOUND:
-                compoundType = Combination._getCompoundType(shape)
-                if compoundType == TopAbs_SOLID:
-                    return Combination.consolidateCompoundSolids(shape)
+        #     elif shape.ShapeType() == TopAbs_COMPOUND:
+        #         compoundType = Combination._getCompoundType(shape)
+        #         if compoundType == TopAbs_SOLID:
+        #             return Combination.consolidateCompoundSolids(shape)
 
-            return shape
+        #     return shape
 
-        fixedShapes = [fixCompounds(shape) for shape in shapes]
-        return reduce(lambda a, b: opClass(a, b).Shape(), fixedShapes)
+        # fixedShapes = [fixCompounds(shape) for shape in shapes]
+        return reduce(opFunc, shapes)
 
     @staticmethod
     def fromBlock(ctx, op, block, **kwargs):
