@@ -274,9 +274,9 @@ class Cylinder(Object3D):
         assert (d is not None) ^ (d1 is not None and d2 is not None)
 
         if d is not None:
-            self.shape = BRepPrimAPI_MakeCylinder(d/2., h).Shape()
+            self.shape = _ycad.cylinder(d/2., h)
         else:
-            self.shape = BRepPrimAPI_MakeCone(d1/2., d2/2., h).Shape()
+            self.shape = _ycad.cone(d1/2., d2/2., h)
 
         if center:
             self._moveApply([0, 0, -h / 2.])

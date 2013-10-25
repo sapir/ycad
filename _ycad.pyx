@@ -91,6 +91,22 @@ def box(float x, float y, float z):
     return Shape().setFromMaker(BRepPrimAPI_MakeBox(x, y, z))
 
 
+cdef extern from "BRepPrimAPI_MakeCylinder.hxx":
+    cdef cppclass BRepPrimAPI_MakeCylinder(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakeCylinder(Standard_Real, Standard_Real)
+
+def cylinder(float r, float h):
+    return Shape().setFromMaker(BRepPrimAPI_MakeCylinder(r, h))
+
+
+cdef extern from "BRepPrimAPI_MakeCone.hxx":
+    cdef cppclass BRepPrimAPI_MakeCone(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakeCone(Standard_Real, Standard_Real, Standard_Real)
+
+def cone(float r1, float r2, float h):
+    return Shape().setFromMaker(BRepPrimAPI_MakeCone(r1, r2, h))
+
+
 cdef extern from "BRepAlgoAPI_Fuse.hxx":
     cdef cppclass BRepAlgoAPI_Fuse(BRepBuilderAPI_MakeShape):
         BRepAlgoAPI_Fuse(TopoDS_Shape, TopoDS_Shape)
