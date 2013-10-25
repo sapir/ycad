@@ -107,6 +107,14 @@ def cone(float r1, float r2, float h):
     return Shape().setFromMaker(BRepPrimAPI_MakeCone(r1, r2, h))
 
 
+cdef extern from "BRepPrimAPI_MakeSphere.hxx":
+    cdef cppclass BRepPrimAPI_MakeSphere(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakeSphere(Standard_Real)
+
+def sphere(float r):
+    return Shape().setFromMaker(BRepPrimAPI_MakeSphere(r))
+
+
 cdef extern from "BRepAlgoAPI_Fuse.hxx":
     cdef cppclass BRepAlgoAPI_Fuse(BRepBuilderAPI_MakeShape):
         BRepAlgoAPI_Fuse(TopoDS_Shape, TopoDS_Shape)

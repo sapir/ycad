@@ -291,7 +291,7 @@ class Sphere(Object3D):
 
         assert isinstance(r, float)
 
-        self.shape = BRepPrimAPI_MakeSphere(r).Shape()
+        self.shape = _ycad.sphere(r)
 
 class Polyhedron(Object3D):
     def __init__(self, ctx, points, triangles):
