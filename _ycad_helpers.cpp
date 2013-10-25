@@ -10,3 +10,11 @@ void writeSTL(const TopoDS_Shape &shape, Standard_CString path,
     writer.SetDeflection(deflection);
     writer.Write(shape, path);
 }
+
+// no need for this method - cython could handle it -
+// but if write's here, then let's keep read here, too
+void readSTL(TopoDS_Shape &shape, Standard_CString path)
+{
+    StlAPI_Reader reader;
+    reader.Read(shape, path);
+}

@@ -181,5 +181,12 @@ cdef extern from "_ycad_helpers.h":
     cdef extern void _writeSTL "writeSTL" (TopoDS_Shape, Standard_CString,
         Standard_Real)
 
+    cdef extern void _readSTL "readSTL" (TopoDS_Shape &, Standard_CString)
+
 def writeSTL(Shape shape, bytes path, double tol):
     _writeSTL(shape.obj, path, tol)
+
+def readSTL(bytes path):
+    s = Shape()
+    _readSTL(s.obj, path)
+    return s

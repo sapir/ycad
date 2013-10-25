@@ -647,12 +647,7 @@ _sqrt = wrapPythonFunc(sqrt)
 # Missing OpenSCAD functions: lookup, rands, str, search, import (for dxf)
 
 def _read(ctx, path):
-    shape = TopoDS_Shape()
-
-    reader = StlAPI_Reader()
-    reader.Read(shape, path)
-
-    return Object3D(shape)
+    return Object3D(_ycad.readSTL(path))
 
 
 def makeTransformFunc(transformName):
