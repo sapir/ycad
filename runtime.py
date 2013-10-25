@@ -165,22 +165,29 @@ class Object3D(object):
         self.shape = shape
         self._name = _autoname(basename) if name is None else name
 
-    # def applyTransform(self, transform, apiClass=BRepBuilderAPI_Transform,
-    #         copy=False):
+    def applyTransform(self, transform):
+        if self.shape is None:
+            return
 
-    #     if self.shape is None:
-    #         return
+        if isinstance(transform, _ycad.Transform):
+            self.shape.applyTransform(transform)
+        else:
+            self.shape.applyGTransform(transform)
 
-    #     self.shape = apiClass(self.shape, transform, copy).Shape()
+    def withTransform(self, transform):
+        newObj = copy.copy(self)
 
-    # def withTransform(self, transform, apiClass=BRepBuilderAPI_Transform):
-    #     newObj = copy.copy(self)
-    #     newObj.applyTransform(transform, apiClass, copy=True)
-    #     return newObj
+        if isinstance(transform, _ycad.Transform):
+            shape = self.shape.withTransform(transform)
+        else:
+            shape = self.shape.withGTransform(transform)
+
+        newObj.shape = shape
+        return newObj
 
     def _moveApply(self, vec):
-        transform = gp_Trsf()
-        transform.SetTranslation(gp_Vec(*vec))
+        transform = _ycad.Transform()
+        transform.setTranslation(vec)
         self.applyTransform(transform)
 
     def move(self, ctx, vec=None, x=0, y=0, z=0):
@@ -189,8 +196,8 @@ class Object3D(object):
         elif len(vec) == 2:
             vec += [0]
 
-        transform = gp_Trsf()
-        transform.SetTranslation(gp_Vec(*vec))
+        transform = _ycad.Transform()
+        transform.setTranslation(vec)
         return self.withTransform(transform)
 
     def scale(self, ctx, size=None, x=1, y=1, z=1):
@@ -203,13 +210,9 @@ class Object3D(object):
                 x, y = size
                 z = 1
 
-        transform = gp_GTrsf(
-            gp_Mat(
-                x, 0, 0,
-                0, y, 0,
-                0, 0, z),
-            gp_XYZ())
-        return self.withTransform(transform, apiClass=BRepBuilderAPI_GTransform)
+        transform = _ycad.GenTransform()
+        transform.setScale(x, y, z)
+        return self.withTransform(transform)
 
     def rotate(self, ctx, angle=None, axis=None, x=None, y=None, z=None):
         # TODO: support 2d version
@@ -226,10 +229,8 @@ class Object3D(object):
             angle = z
             axis = [0, 0, 1]
 
-        gpAxis = gp_Ax1(gp_Pnt(), gp_Dir(*axis))
-
-        transform = gp_Trsf()
-        transform.SetRotation(gpAxis, radians(angle))
+        transform = _ycad.Transform()
+        transform.setRotation(axis, radians(angle))
         return self.withTransform(transform)
 
     def extrude(self, ctx, *args, **kwargs):

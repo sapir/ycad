@@ -1,3 +1,5 @@
+from libcpp cimport bool
+
 ctypedef float Standard_Real
 ctypedef char* Standard_CString
 
@@ -101,6 +103,13 @@ cdef extern from "BRepAlgoAPI_Common.hxx":
     cdef cppclass BRepAlgoAPI_Common(BRepBuilderAPI_MakeShape):
         BRepAlgoAPI_Common(TopoDS_Shape, TopoDS_Shape)
 
+cdef extern from "BRepBuilderAPI_Transform.hxx":
+    cdef cppclass BRepBuilderAPI_Transform(BRepBuilderAPI_MakeShape):
+        BRepBuilderAPI_Transform(TopoDS_Shape, gp_Trsf, bool)
+
+cdef extern from "BRepBuilderAPI_GTransform.hxx":
+    cdef cppclass BRepBuilderAPI_GTransform(BRepBuilderAPI_MakeShape):
+        BRepBuilderAPI_GTransform(TopoDS_Shape, gp_GTrsf, bool)
 
 
 cdef class Shape:
@@ -122,6 +131,26 @@ cdef class Shape:
 
     def __mul__(Shape self, Shape b):
         return Shape().setFromMaker(BRepAlgoAPI_Common(self.obj, b.obj))
+
+    def applyTransform(Shape self, Transform transform):
+        self.setFromMaker(BRepBuilderAPI_Transform(
+            # False = don't copy
+            self.obj, transform.obj, False))
+
+    def applyGTransform(Shape self, GenTransform gtransform):
+        self.setFromMaker(BRepBuilderAPI_GTransform(
+            # False = don't copy
+            self.obj, gtransform.obj, False))
+
+    def withTransform(Shape self, Transform transform):
+        return Shape().setFromMaker(BRepBuilderAPI_Transform(
+            # True = make a copy
+            self.obj, transform.obj, True))
+
+    def withGTransform(Shape self, GenTransform gtransform):
+        return Shape().setFromMaker(BRepBuilderAPI_GTransform(
+            # True = make a copy
+            self.obj, gtransform.obj, True))
 
 
 cdef extern from "_ycad_helpers.h":
