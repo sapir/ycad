@@ -531,7 +531,7 @@ class LinearExtrusion(Object3D):
         for i in xrange(numTwistSegments + 1):
             z = segmentHeight * i
             angle = segmentTwistRad * i
-            auxSurfPts[0][i] = (0, 0, z))
+            auxSurfPts[0][i] = (0, 0, z)
             auxSurfPts[1][i] = (cos(angle), sin(angle), z)
 
         auxSurf = _ycad.BezierSurface(auxSurfPts)
