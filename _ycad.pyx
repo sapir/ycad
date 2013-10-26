@@ -185,22 +185,37 @@ cdef class BezierSurface:
 
 cdef extern from "TopAbs_Orientation.hxx":
     enum TopAbs_Orientation:
-        TopAbs_FORWARD
-        TopAbs_REVERSED
-        TopAbs_INTERNAL
-        TopAbs_EXTERNAL
+        _TopAbs_FORWARD "TopAbs_FORWARD"
+        _TopAbs_REVERSED "TopAbs_REVERSED"
+        _TopAbs_INTERNAL "TopAbs_INTERNAL"
+        _TopAbs_EXTERNAL "TopAbs_EXTERNAL"
+
+TopAbs_FORWARD = _TopAbs_FORWARD
+TopAbs_REVERSED = _TopAbs_REVERSED
+TopAbs_INTERNAL = _TopAbs_INTERNAL
+TopAbs_EXTERNAL = _TopAbs_EXTERNAL
 
 cdef extern from "TopAbs_ShapeEnum.hxx":
     enum TopAbs_ShapeEnum:
-        TopAbs_COMPOUND
-        TopAbs_COMPSOLID
-        TopAbs_SOLID
-        TopAbs_SHELL
-        TopAbs_FACE
-        TopAbs_WIRE
-        TopAbs_EDGE
-        TopAbs_VERTEX
-        TopAbs_SHAPE
+        _TopAbs_COMPOUND "TopAbs_COMPOUND"
+        _TopAbs_COMPSOLID "TopAbs_COMPSOLID"
+        _TopAbs_SOLID "TopAbs_SOLID"
+        _TopAbs_SHELL "TopAbs_SHELL"
+        _TopAbs_FACE "TopAbs_FACE"
+        _TopAbs_WIRE "TopAbs_WIRE"
+        _TopAbs_EDGE "TopAbs_EDGE"
+        _TopAbs_VERTEX "TopAbs_VERTEX"
+        _TopAbs_SHAPE "TopAbs_SHAPE"
+
+TopAbs_COMPOUND = _TopAbs_COMPOUND
+TopAbs_COMPSOLID = _TopAbs_COMPSOLID
+TopAbs_SOLID = _TopAbs_SOLID
+TopAbs_SHELL = _TopAbs_SHELL
+TopAbs_FACE = _TopAbs_FACE
+TopAbs_WIRE = _TopAbs_WIRE
+TopAbs_EDGE = _TopAbs_EDGE
+TopAbs_VERTEX = _TopAbs_VERTEX
+TopAbs_SHAPE = _TopAbs_SHAPE
 
 cdef extern from "TopoDS_Shape.hxx":
     cdef cppclass TopoDS_Shape:
