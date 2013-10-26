@@ -14,6 +14,7 @@ import _ycad
 
 
 OUTPUT_TOLERANCE = 0.05        # in mm
+DEFAULT_INCLUDE_DIR = os.path.join(os.path.dirname(__file__), 'include')
 
 
 class ReturnException(BaseException):
@@ -59,7 +60,8 @@ class Context:
     def execProgram(self, srcPath, parsedProgram, moduleObjName):
         try:
             self.pushScope()
-            self.setVar('__path', [os.path.dirname(srcPath)])
+            self.setVar('__path',
+                [DEFAULT_INCLUDE_DIR, os.path.dirname(srcPath)])
 
             output = Combination.fromBlock(self, 'add',
                 block=Block(parsedProgram), name=moduleObjName)
