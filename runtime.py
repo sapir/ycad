@@ -320,7 +320,7 @@ class Torus(Object3D):
         #if angle1 is not None:
         #    args += [radians(angle1), radians(angle2)]
 
-        self.shape = BRepPrimAPI_MakeTorus(*args).Shape()
+        self.shape = _ycad.torus(*args)
 
 class Combination(Object3D):
     def __init__(self, ctx, op, objs, name=None):

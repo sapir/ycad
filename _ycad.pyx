@@ -228,6 +228,26 @@ def sphere(float r):
     return Shape().setFromMaker(BRepPrimAPI_MakeSphere(r))
 
 
+cdef extern from "BRepPrimAPI_MakeTorus.hxx":
+    cdef cppclass BRepPrimAPI_MakeTorus(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakeTorus(Standard_Real R1, Standard_Real R2)
+        BRepPrimAPI_MakeTorus(Standard_Real R1, Standard_Real R2,
+            Standard_Real angle)
+        BRepPrimAPI_MakeTorus(Standard_Real R1, Standard_Real R2,
+            Standard_Real angle1, Standard_Real angle2)
+        BRepPrimAPI_MakeTorus(Standard_Real R1, Standard_Real R2,
+            Standard_Real angle1, Standard_Real angle2, Standard_Real angle)
+
+def torus(*args):
+    if len(args) == 2:
+        r1, r2 = args
+        return Shape().setFromMaker(BRepPrimAPI_MakeTorus(r1, r2))
+
+    elif len(args) == 3:
+        r1, r2, angle = args
+        return Shape().setFromMaker(BRepPrimAPI_MakeTorus(r1, r2, angle))
+
+
 cdef extern from "_ycad_helpers.h":
     cdef extern void _writeSTL "writeSTL" (TopoDS_Shape, Standard_CString,
         Standard_Real)
