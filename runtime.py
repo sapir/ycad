@@ -352,10 +352,6 @@ class Combination(Object3D):
             return TopAbs_FACE
 
     @staticmethod
-    def compSolidToSolid(compSolid):
-        return BRepBuilderAPI_MakeSolid(compSolid).Shape()
-
-    @staticmethod
     def consolidateCompoundSolids(compound):
         '''Assumes _getCompoundType(compound) is TopAbs_SOLID.'''
 

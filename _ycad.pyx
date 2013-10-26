@@ -248,6 +248,18 @@ cdef extern from "TopoDS_Face.hxx":
     cdef cppclass TopoDS_Face(TopoDS_Shape):
         pass
 
+cdef extern from "TopoDS_Shell.hxx":
+    cdef cppclass TopoDS_Shell(TopoDS_Shape):
+        pass
+
+cdef extern from "TopoDS_Solid.hxx":
+    cdef cppclass TopoDS_Solid(TopoDS_Shape):
+        pass
+
+cdef extern from "TopoDS_CompSolid.hxx":
+    cdef cppclass TopoDS_CompSolid(TopoDS_Shape):
+        pass
+
 cdef extern from "TopoDS_Compound.hxx":
     cdef cppclass TopoDS_Compound(TopoDS_Shape):
         pass
@@ -255,7 +267,11 @@ cdef extern from "TopoDS_Compound.hxx":
 cdef extern from "TopoDS.hxx" namespace "TopoDS":
     cdef TopoDS_Edge Edge(TopoDS_Shape)
     cdef TopoDS_Wire Wire(TopoDS_Shape)
-    cdef TopoDS_Face Face(TopoDS_Shape)
+    cdef TopoDS_Face #(TopoDS_Shape)
+    cdef TopoDS_Shell Shell(TopoDS_Shape)
+    cdef TopoDS_Solid Solid(TopoDS_Shape)
+    cdef TopoDS_CompSolid CompSolid(TopoDS_Shape)
+    cdef TopoDS_Compound Compound(TopoDS_Shape)
 
 cdef extern from "TopExp_Explorer.hxx":
     cdef cppclass TopExp_Explorer:
@@ -271,9 +287,9 @@ cdef extern from "BRep_Builder.hxx":
     cdef cppclass BRep_Builder:
         BRep_Builder()
         void MakeWire(TopoDS_Wire)
-        #void MakeShell(TopoDS_Shell)
-        #void MakeSolid(TopoDS_Solid)
-        #void MakeCompSolid(TopoDS_CompSolid)
+        void MakeShell(TopoDS_Shell)
+        void MakeSolid(TopoDS_Solid)
+        void MakeCompSolid(TopoDS_CompSolid)
         void MakeCompound(TopoDS_Compound)
         void Add(TopoDS_Shape, TopoDS_Shape)
         void Remove(TopoDS_Shape, TopoDS_Shape)
@@ -374,6 +390,18 @@ cdef class Shape:
 
     cdef TopoDS_Face face(self):
         return Face(self.obj)
+
+    cdef TopoDS_Shell shell(self):
+        return Shell(self.obj)
+
+    cdef TopoDS_Solid solid(self):
+        return Solid(self.obj)
+
+    cdef TopoDS_CompSolid compSolid(self):
+        return CompSolid(self.obj)
+
+    cdef TopoDS_Compound compound(self):
+        return Compound(self.obj)
 
     def __add__(Shape self, Shape b):
         return Shape().setFromMaker(BRepAlgoAPI_Fuse(self.obj, b.obj))
@@ -497,6 +525,10 @@ def face(wires):
     for wireShape in wireIter:
         maker.Add((<Shape?>wireShape).wire())
     return Shape().setFromMaker(maker)
+
+def compSolidToSolid(Shape compSolidShape):
+    return Shape().setFromMaker(BRepBuilderAPI_MakeSolid(
+        compSolidShape.compSolid()))
 
 def compound(shapes):
     cdef BRep_Builder builder
