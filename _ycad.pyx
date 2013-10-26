@@ -121,38 +121,6 @@ cdef extern from "BRepBuilderAPI_MakeFace.hxx":
         TopoDS_Face Face()
 
 
-cdef extern from "BRepPrimAPI_MakeBox.hxx":
-    cdef cppclass BRepPrimAPI_MakeBox(BRepBuilderAPI_MakeShape):
-        BRepPrimAPI_MakeBox(Standard_Real, Standard_Real, Standard_Real)
-
-def box(float x, float y, float z):
-    return Shape().setFromMaker(BRepPrimAPI_MakeBox(x, y, z))
-
-
-cdef extern from "BRepPrimAPI_MakeCylinder.hxx":
-    cdef cppclass BRepPrimAPI_MakeCylinder(BRepBuilderAPI_MakeShape):
-        BRepPrimAPI_MakeCylinder(Standard_Real, Standard_Real)
-
-def cylinder(float r, float h):
-    return Shape().setFromMaker(BRepPrimAPI_MakeCylinder(r, h))
-
-
-cdef extern from "BRepPrimAPI_MakeCone.hxx":
-    cdef cppclass BRepPrimAPI_MakeCone(BRepBuilderAPI_MakeShape):
-        BRepPrimAPI_MakeCone(Standard_Real, Standard_Real, Standard_Real)
-
-def cone(float r1, float r2, float h):
-    return Shape().setFromMaker(BRepPrimAPI_MakeCone(r1, r2, h))
-
-
-cdef extern from "BRepPrimAPI_MakeSphere.hxx":
-    cdef cppclass BRepPrimAPI_MakeSphere(BRepBuilderAPI_MakeShape):
-        BRepPrimAPI_MakeSphere(Standard_Real)
-
-def sphere(float r):
-    return Shape().setFromMaker(BRepPrimAPI_MakeSphere(r))
-
-
 cdef extern from "BRepAlgoAPI_Fuse.hxx":
     cdef cppclass BRepAlgoAPI_Fuse(BRepBuilderAPI_MakeShape):
         BRepAlgoAPI_Fuse(TopoDS_Shape, TopoDS_Shape)
@@ -213,6 +181,38 @@ cdef class Shape:
         return Shape().setFromMaker(BRepBuilderAPI_GTransform(
             # True = make a copy
             self.obj, gtransform.obj, True))
+
+
+cdef extern from "BRepPrimAPI_MakeBox.hxx":
+    cdef cppclass BRepPrimAPI_MakeBox(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakeBox(Standard_Real, Standard_Real, Standard_Real)
+
+def box(float x, float y, float z):
+    return Shape().setFromMaker(BRepPrimAPI_MakeBox(x, y, z))
+
+
+cdef extern from "BRepPrimAPI_MakeCylinder.hxx":
+    cdef cppclass BRepPrimAPI_MakeCylinder(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakeCylinder(Standard_Real, Standard_Real)
+
+def cylinder(float r, float h):
+    return Shape().setFromMaker(BRepPrimAPI_MakeCylinder(r, h))
+
+
+cdef extern from "BRepPrimAPI_MakeCone.hxx":
+    cdef cppclass BRepPrimAPI_MakeCone(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakeCone(Standard_Real, Standard_Real, Standard_Real)
+
+def cone(float r1, float r2, float h):
+    return Shape().setFromMaker(BRepPrimAPI_MakeCone(r1, r2, h))
+
+
+cdef extern from "BRepPrimAPI_MakeSphere.hxx":
+    cdef cppclass BRepPrimAPI_MakeSphere(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakeSphere(Standard_Real)
+
+def sphere(float r):
+    return Shape().setFromMaker(BRepPrimAPI_MakeSphere(r))
 
 
 cdef extern from "_ycad_helpers.h":
