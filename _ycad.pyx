@@ -72,6 +72,10 @@ cdef extern from "TColgp_Array2OfPnt.hxx":
     cdef cppclass TColgp_Array2OfPnt:
         TColgp_Array2OfPnt(int, int, int, int)
 
+cdef extern from "TColgp_Array1OfPnt2d.hxx":
+    cdef cppclass TColgp_Array1OfPnt2d:
+        TColgp_Array1OfPnt2d(int, int)
+
 cdef extern from "gp.hxx" namespace "gp":
     gp_Pnt Origin()
     gp_Dir DX()
@@ -111,14 +115,38 @@ cdef extern from "gp_Circ.hxx":
         gp_Circ()
         gp_Circ(gp_Ax2, Standard_Real)
 
+cdef extern from "Geom2d_Curve.hxx":
+    cdef cppclass Geom2d_Curve:
+        pass
+
+cdef extern from "Geom2d_BezierCurve.hxx":
+    cdef cppclass Geom2d_BezierCurve(Geom2d_Curve):
+        Geom2d_BezierCurve(TColgp_Array1OfPnt2d)
+        void SetPole(int, gp_Pnt2d)
+
 cdef extern from "Handle_Geom2d_Curve.hxx":
     cdef cppclass Handle_Geom2d_Curve:
-        pass
+        void Set "operator=" (Geom2d_Curve*)
 
 cdef extern from "Handle_Geom2d_TrimmedCurve.hxx":
     # actually inherits from BoundedCurve
     cdef cppclass Handle_Geom2d_TrimmedCurve(Handle_Geom2d_Curve):
         pass
+
+cdef class BezierCurve:
+    cdef Handle_Geom2d_Curve handle
+
+    def __cinit__(self, pnts2D):
+        cdef Geom2d_BezierCurve *curvePtr = new Geom2d_BezierCurve(
+            TColgp_Array1OfPnt2d(1, len(pnts2D)))
+        self.handle.Set(curvePtr)
+
+        for i, (x, y) in enumerate(pnts2D):
+            curvePtr.SetPole(i + 1, gp_Pnt2d(x, y))
+
+    def makeEdge(self):
+        return Shape().setFromMaker(BRepBuilderAPI_MakeEdge2d(self.handle))
+
 
 cdef extern from "Geom_Surface.hxx":
     cdef cppclass Geom_Surface:
@@ -308,7 +336,8 @@ cdef extern from "BRepBuilderAPI_MakeEdge.hxx":
 
 cdef extern from "BRepBuilderAPI_MakeEdge2d.hxx":
     cdef cppclass BRepBuilderAPI_MakeEdge2d(BRepBuilderAPI_MakeShape):
-        BRepBuilderAPI_MakeEdge(gp_Pnt2d, gp_Pnt2d)
+        BRepBuilderAPI_MakeEdge2d(gp_Pnt2d, gp_Pnt2d)
+        BRepBuilderAPI_MakeEdge2d(Handle_Geom2d_Curve)
         TopoDS_Edge Edge()
 
 cdef extern from "BRepBuilderAPI_MakeWire.hxx":

@@ -5,30 +5,11 @@ import networkx
 import _ycad
 
 
-def make2DLine(p1, p2):
-    gpP1 = gp_Pnt2d(*p1)
-    gpP2 = gp_Pnt2d(*p2)
-    return BRepBuilderAPI_MakeEdge2d(gpP1, gpP2).Edge()
-
-def makeArray1OfPnt2d(pnts):
-    arr = TColgp_Array1OfPnt2d(1, len(pnts))
-    for i, p in enumerate(pnts):
-        arr.SetValue(i + 1, p)
-
-    return arr
-
-def make2DCurve(p0, p1, p2, p3):
-    pnts = [gp_Pnt2d(*p) for p in [p0, p1, p2, p3]]
-    pntArray = makeArray1OfPnt2d(pnts)
-    curve = Geom2d_BezierCurve(pntArray)
-    return BRepBuilderAPI_MakeEdge2d(curve.GetHandle()).Edge()
-
 def cairoPathToOccWiresAndPts(path):
-    wireMaker = BRepBuilderAPI_MakeWire()
+    edgesInCurWire = []
 
     startPt = None
     curPt = None
-    addedAnything = False
     
     for pathInstr in path:
         instrType, instrArgs = pathInstr
@@ -44,8 +25,7 @@ def cairoPathToOccWiresAndPts(path):
             if curPt is None:
                 curPt = (x, y)
             else:
-                wireMaker.Add(make2DLine(curPt, (x, y)))
-                addedAnything = True
+                edgesInCurWire.append(_ycad.segment2D(curPt, (x, y)))
 
                 curPt = (x, y)
 
@@ -56,24 +36,22 @@ def cairoPathToOccWiresAndPts(path):
                 curPt = (x1, y1)
                 raise NotImplementedError
 
-            wireMaker.Add(make2DCurve(curPt, (x1, y1), (x2, y2), (x3, y3)))
-            addedAnything = True
+            curve = _ycad.BezierCurve(
+                [curPt, (x1, y1), (x2, y2), (x3, y3)])
+            edgesInCurWire.append(curve.makeEdge())
             curPt = (x3, y3)
 
         elif instrType == cairo.PATH_CLOSE_PATH:
             if startPt is not None and curPt is not None and startPt != curPt:
-                wireMaker.Add(make2DLine(curPt, startPt))
-                addedAnything = True
+                edgesInCurWire.append(_ycad.segment2D(curPt, startPt))
                 curPt = startPt
 
-            if addedAnything:
+            if edgesInCurWire:
                 assert startPt is not None
-                yield (wireMaker.Wire(), startPt)
+                yield (_ycad.wire(edgesInCurWire), startPt)
 
-                # set up a new, empty wireMaker
-                wireMaker = BRepBuilderAPI_MakeWire()
-
-                addedAnything = False
+                # get ready for next wire
+                edgesInCurWire = []
             
             startPt = None
     
@@ -81,6 +59,7 @@ def cairoPathToOccWiresAndPts(path):
     # instr should have been a close_path
     assert instrType == cairo.PATH_CLOSE_PATH, \
         "Last path instruction should be a PATH_CLOSE_PATH!"
+    assert not edgesInCurWire
 
 def groupNonIntersectingWiresIntoFaces(wiresAndPts):
     # build directed graph of wires A->B where contains B
@@ -111,7 +90,7 @@ def groupNonIntersectingWiresIntoFaces(wiresAndPts):
         # can become root wires.
         for rootWire in rootWires:
             wires = [rootWire] + containmentGraph.successors(rootWire)
-            containmentGraph.remove_nodes(wires)
+            containmentGraph.remove_nodes_from(wires)
             faces.append(_ycad.face(wires))
 
     return faces
