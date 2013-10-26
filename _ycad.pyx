@@ -101,6 +101,12 @@ cdef extern from "TopoDS_Face.hxx":
     cdef cppclass TopoDS_Face(TopoDS_Shape):
         pass
 
+cdef extern from "TopoDS.hxx" namespace "TopoDS":
+    cdef TopoDS_Edge Edge(TopoDS_Shape)
+    cdef TopoDS_Wire Wire(TopoDS_Shape)
+    cdef TopoDS_Face Face(TopoDS_Shape)
+
+
 cdef extern from "BRepBuilderAPI_MakeShape.hxx":
     cdef cppclass BRepBuilderAPI_MakeShape:
         const TopoDS_Shape &Shape()
