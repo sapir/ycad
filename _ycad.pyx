@@ -1,4 +1,5 @@
 from libcpp cimport bool
+from cython.operator cimport dereference as deref
 
 
 ctypedef float Standard_Real
@@ -262,6 +263,14 @@ cdef extern from "BRepPrimAPI_MakePrism.hxx":
     cdef cppclass BRepPrimAPI_MakePrism(BRepBuilderAPI_MakeShape):
         BRepPrimAPI_MakePrism(TopoDS_Shape, gp_Vec, bool Copy)
 
+cdef extern from "BRepOffsetAPI_MakePipeShell.hxx":
+    cdef cppclass BRepOffsetAPI_MakePipeShell(BRepBuilderAPI_MakeShape):
+        BRepOffsetAPI_MakePipeShell(TopoDS_Wire Spine)
+        bool SetMode(TopoDS_Shape SpineSupport)
+        void Add(TopoDS_Shape Profile)
+        void Build()
+        bool MakeSolid()
+
 
 cdef class Shape:
     cdef TopoDS_Shape obj
@@ -319,6 +328,38 @@ cdef class Shape:
     def extrudeStraight(Shape self, float h):
         return Shape().setFromMaker(BRepPrimAPI_MakePrism(
             self.obj, gp_Vec(0, 0, h), True))
+
+    def extrudeAlongSurface(Shape self, Shape spine, Shape normalSurf,
+        bool cap=True):
+
+        """
+        Extrude along spine, using the corresponding normal at points on
+        normalSurf as the normal for the spine, and using this shape as
+        the extrusion profile.
+
+        spine and normalSurf should be created from the same BezierSurface
+        using BezierSurface.makeEdgeOnSurface() and BezierSurface.makeFace(),
+        respectively.
+        """
+
+        cdef TopoDS_Wire spineWire = BRepBuilderAPI_MakeWire(
+            spine.edge()).Wire()
+        
+        cdef BRepOffsetAPI_MakePipeShell *maker
+        maker = new BRepOffsetAPI_MakePipeShell(spineWire)
+
+        try:
+            if not maker.SetMode(normalSurf.face()):
+                raise ValueError(
+                    "failed setting twisted surface-normal for PipeShell")
+
+            maker.Add(self.obj)
+            maker.Build()
+            maker.MakeSolid()
+            return Shape().setFromMaker(deref(maker))
+        finally:
+            # TODO: ensure that relevant C++ exceptions are caught, too
+            del maker
 
 
 def segment(p1, p2):
