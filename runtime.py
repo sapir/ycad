@@ -469,9 +469,7 @@ class LinearExtrusion(Object3D):
         outerWires = []
         innerWires = []
         fwdFace = face.oriented(_ycad.TopAbs_FORWARD)
-        for wire in fwdFace.descendants(TopAbs_WIRE):
-            wire = TopoDS_wire(wire)
-
+        for wire in fwdFace.descendants(_ycad.TopAbs_WIRE):
             if wire.isInnerWireOfFace(face):
                 innerWires.append(wire)
             else:
