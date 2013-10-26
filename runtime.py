@@ -353,13 +353,16 @@ class Combination(Object3D):
         # # solids so we convert them to single solids. (docs say that
         # # compsolids aren't handled either, so we fix those, too).
         # def fixCompounds(shape):
-        #     if shape.ShapeType() == TopAbs_COMPSOLID:
-        #         return Combination.compSolidToSolid(compSolid)
+        #     return shape
+        #     if shape.shapeType == _ycad.TopAbs_COMPSOLID:
+        #         return _ycad.compSolidToSolid(shape)
 
-        #     elif shape.ShapeType() == TopAbs_COMPOUND:
+        #     elif shape.shapeType == _ycad.TopAbs_COMPOUND:
         #         compoundType = Combination._getCompoundType(shape)
-        #         if compoundType == TopAbs_SOLID:
-        #             return Combination.consolidateCompoundSolids(shape)
+        #         if compoundType == _ycad.TopAbs_SOLID:
+        #             return _ycad.compSolidToSolid(
+        #                 _ycad.solidsToCompSolid(
+        #                     shape.descendants(_ycad.TopAbs_SOLID)))
 
         #     return shape
 
@@ -373,7 +376,7 @@ class Combination(Object3D):
 
     @staticmethod
     def _getCompoundType(compound):
-        assert compound.ShapeType() == TopAbs_COMPOUND
+        assert compound.shapeType == _ycad.TopAbs_COMPOUND
 
         hasSolids = False
         for obj in compound.descendants(_ycad.TopAbs_SOLID):
@@ -389,24 +392,10 @@ class Combination(Object3D):
         assert hasSolids ^ hasExtraFaces
 
         if hasSolids:
-            return TopAbs_SOLID
+            return _ycad.TopAbs_SOLID
         else:
             assert hasExtraFaces
-            return TopAbs_FACE
-
-    @staticmethod
-    def consolidateCompoundSolids(compound):
-        '''Assumes _getCompoundType(compound) is TopAbs_SOLID.'''
-
-        builder = TopoDS_Builder()
-
-        compSolid = TopoDS_CompSolid()
-        builder.MakeCompSolid(compSolid)
-
-        for solid in compound.descendants(_ycad.TopAbs_SOLID):
-            builder.Add(compSolid, TopoDS_solid(solid))
-
-        return Combination.compSolidToSolid(compSolid)
+            return _ycad.TopAbs_FACE
 
 
 def regPoly(ctx, sides, r):
