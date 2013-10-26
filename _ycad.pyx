@@ -6,6 +6,9 @@ ctypedef float Standard_Real
 ctypedef char* Standard_CString
 
 
+cdef extern from "Precision.hxx" namespace "Precision":
+    Standard_Real Confusion()
+
 cdef extern from "gp_Pnt2d.hxx":
     cdef cppclass gp_Pnt2d:
         gp_Pnt2d()
@@ -157,7 +160,7 @@ cdef class BezierSurface:
                 surfptr.SetPole(i, j, gp_Pnt(x, y, z))
 
     def makeFace(self, float umin, float umax, float vmin, float vmax,
-        float tolDegen):
+        float tolDegen=Confusion()):
 
         return Shape().setFromMaker(BRepBuilderAPI_MakeFace(
             self.handle, umin, umax, vmin, vmax, tolDegen))
