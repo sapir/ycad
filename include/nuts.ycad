@@ -1,0 +1,40 @@
+# calculations are (mostly) from OpenSCAD MCAD library
+
+func nutHeight(dia) {
+    return 0.8 * dia
+}
+
+func nutAFDia(dia) {
+    return 1.8 * dia
+}
+
+func nutACDia(dia) {
+    return nutAFDia(dia) / cos(30)
+}
+
+func boltHeadHeight(dia) {
+    return 0.7 * dia
+}
+
+func hexNut(dia, xtol=0, ztol=0, full=false)
+{
+    h = nutHeight(dia) + ztol
+    d = nutACDia(dia) + xtol
+
+    sub {
+        regPrism(6, r=d / 2, h=h)
+
+        if not full {
+            cylinder(d=dia, h=h * 2).move(z=-h / 2)
+        }
+    }
+}
+
+func bolt(dia, totalLen, xtol=0, ztol=0) {
+    d = nutACDia(dia) + xtol
+    h = boltHeadHeight(dia) + ztol
+
+    regPrism(6, r=d / 2, h=h)
+
+    cylinder(d=dia, h=totalLen + ztol)
+}
