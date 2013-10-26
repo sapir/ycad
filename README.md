@@ -10,4 +10,5 @@ For examples of current syntax, see the examples dir:
 * [simple.ycad](examples/simple.ycad)
 * [pedestal.ycad](examples/pedestal.ycad)
 
-ycad uses [pythonocc](https://github.com/tpaviot/pythonocc) as a backend.
+ycad uses [OCE](https://github.com/tpaviot/oce) as a backend, with
+a Cython wrapper.
