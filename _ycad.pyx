@@ -223,6 +223,15 @@ cdef extern from "TopoDS.hxx" namespace "TopoDS":
     cdef TopoDS_Wire Wire(TopoDS_Shape)
     cdef TopoDS_Face Face(TopoDS_Shape)
 
+cdef extern from "TopExp_Explorer.hxx":
+    cdef cppclass TopExp_Explorer:
+        TopExp_Explorer()
+        TopExp_Explorer(TopoDS_Shape, TopAbs_ShapeEnum, TopAbs_ShapeEnum)
+        void Init(TopoDS_Shape, TopAbs_ShapeEnum, TopAbs_ShapeEnum)
+        bool More()
+        void Next()
+        TopoDS_Shape Current()
+
 
 cdef extern from "BRepBuilderAPI_MakeShape.hxx":
     cdef cppclass BRepBuilderAPI_MakeShape:
@@ -322,6 +331,22 @@ cdef class Shape:
 
     def __mul__(Shape self, Shape b):
         return Shape().setFromMaker(BRepAlgoAPI_Common(self.obj, b.obj))
+
+    def descendants(self, TopAbs_ShapeEnum toFind,
+        TopAbs_ShapeEnum toAvoid=TopAbs_SHAPE):
+
+        """
+        Iterates over descendants of this shape of type (toFind),
+        skipping those contained within shapes of type (toAvoid).
+
+        The default for (toAvoid) is not to avoid anything.
+        """
+
+        cdef TopExp_Explorer explorer
+        explorer.Init(self.obj, toFind, toAvoid)
+        while explorer.More():
+            yield Shape().set_(explorer.Current())
+            explorer.Next()
 
     def applyTransform(Shape self, Transform transform):
         self.setFromMaker(BRepBuilderAPI_Transform(
