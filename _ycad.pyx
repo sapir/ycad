@@ -248,6 +248,10 @@ cdef extern from "TopoDS_Face.hxx":
     cdef cppclass TopoDS_Face(TopoDS_Shape):
         pass
 
+cdef extern from "TopoDS_Compound.hxx":
+    cdef cppclass TopoDS_Compound(TopoDS_Shape):
+        pass
+
 cdef extern from "TopoDS.hxx" namespace "TopoDS":
     cdef TopoDS_Edge Edge(TopoDS_Shape)
     cdef TopoDS_Wire Wire(TopoDS_Shape)
@@ -270,7 +274,7 @@ cdef extern from "BRep_Builder.hxx":
         #void MakeShell(TopoDS_Shell)
         #void MakeSolid(TopoDS_Solid)
         #void MakeCompSolid(TopoDS_CompSolid)
-        #void MakeCompound(TopoDS_Compound)
+        void MakeCompound(TopoDS_Compound)
         void Add(TopoDS_Shape, TopoDS_Shape)
         void Remove(TopoDS_Shape, TopoDS_Shape)
 
@@ -493,6 +497,16 @@ def face(wires):
     for wireShape in wireIter:
         maker.Add((<Shape?>wireShape).wire())
     return Shape().setFromMaker(maker)
+
+def compound(shapes):
+    cdef BRep_Builder builder
+    cdef TopoDS_Compound compound
+    
+    builder.MakeCompound(compound)
+    for shape in shapes:
+        builder.Add(compound, (<Shape?>shape).obj)
+
+    return Shape().set_(compound)
 
 
 def circle(float r):

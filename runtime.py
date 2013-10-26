@@ -458,7 +458,7 @@ class LinearExtrusion(Object3D):
     def _makeTwisted(self, baseShape, height, twist):
         faces = baseShape.descendants(_ycad.TopAbs_FACE)
 
-        self.shape = textimpl.makeCompound(
+        self.shape = _ycad.compound(
             self._twistFace(face, height, twist)
             for face in faces)
 
