@@ -267,7 +267,7 @@ cdef extern from "TopoDS_Compound.hxx":
 cdef extern from "TopoDS.hxx" namespace "TopoDS":
     cdef TopoDS_Edge Edge(TopoDS_Shape)
     cdef TopoDS_Wire Wire(TopoDS_Shape)
-    cdef TopoDS_Face #(TopoDS_Shape)
+    cdef TopoDS_Face Face(TopoDS_Shape)
     cdef TopoDS_Shell Shell(TopoDS_Shape)
     cdef TopoDS_Solid Solid(TopoDS_Shape)
     cdef TopoDS_CompSolid CompSolid(TopoDS_Shape)
