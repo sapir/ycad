@@ -8,6 +8,7 @@ ctypedef char* Standard_CString
 
 cdef extern from "Precision.hxx" namespace "Precision":
     Standard_Real Confusion()
+    Standard_Real PConfusion()
 
 cdef extern from "gp_Pnt2d.hxx":
     cdef cppclass gp_Pnt2d:
@@ -217,9 +218,23 @@ TopAbs_EDGE = _TopAbs_EDGE
 TopAbs_VERTEX = _TopAbs_VERTEX
 TopAbs_SHAPE = _TopAbs_SHAPE
 
+cdef extern from "TopAbs_State.hxx":
+    enum TopAbs_State:
+        _TopAbs_IN "TopAbs_IN"
+        _TopAbs_OUT "TopAbs_OUT"
+        _TopAbs_ON "TopAbs_ON"
+        _TopAbs_UNKNOWN "TopAbs_UNKNOWN"
+
+TopAbs_IN = _TopAbs_IN
+TopAbs_OUT = _TopAbs_OUT
+TopAbs_ON = _TopAbs_ON
+TopAbs_UNKNOWN = _TopAbs_UNKNOWN
+
+
 cdef extern from "TopoDS_Shape.hxx":
     cdef cppclass TopoDS_Shape:
         TopoDS_Shape Oriented(TopAbs_Orientation)
+        TopoDS_Shape EmptyCopied()
 
 cdef extern from "TopoDS_Edge.hxx":
     cdef cppclass TopoDS_Edge(TopoDS_Shape):
@@ -247,6 +262,17 @@ cdef extern from "TopExp_Explorer.hxx":
         void Next()
         TopoDS_Shape Current()
 
+
+cdef extern from "BRep_Builder.hxx":
+    cdef cppclass BRep_Builder:
+        BRep_Builder()
+        void MakeWire(TopoDS_Wire)
+        #void MakeShell(TopoDS_Shell)
+        #void MakeSolid(TopoDS_Solid)
+        #void MakeCompSolid(TopoDS_CompSolid)
+        #void MakeCompound(TopoDS_Compound)
+        void Add(TopoDS_Shape, TopoDS_Shape)
+        void Remove(TopoDS_Shape, TopoDS_Shape)
 
 cdef extern from "BRepBuilderAPI_MakeShape.hxx":
     cdef cppclass BRepBuilderAPI_MakeShape:
@@ -316,6 +342,13 @@ cdef extern from "BRepOffsetAPI_MakePipeShell.hxx":
         void Add(TopoDS_Shape Profile)
         void Build()
         bool MakeSolid()
+
+
+cdef extern from "BRepTopAdaptor_FClass2d.hxx":
+    cdef cppclass BRepTopAdaptor_FClass2d:
+        BRepTopAdaptor_FClass2d(TopoDS_Face, Standard_Real tol)
+        TopAbs_State PerformInfinitePoint()
+        TopAbs_State Perform(gp_Pnt2d, bool)
 
 
 cdef class Shape:
@@ -425,6 +458,16 @@ cdef class Shape:
 
     def oriented(self, TopAbs_Orientation orient):
         return Shape().set_(self.obj.Oriented(orient))
+
+    def emptyCopied(self):
+        return Shape().set_(self.obj.EmptyCopied())
+
+    def isInnerWireOfFace(self, Shape face):
+        # recipe from http://opencascade.wikidot.com/recipes
+        cdef Shape newface = face.emptyCopied().oriented(_TopAbs_FORWARD)
+        BRep_Builder().Add(newface.obj, self.obj)
+        return (BRepTopAdaptor_FClass2d(newface.face(), PConfusion())
+            .PerformInfinitePoint() != TopAbs_OUT)
 
 
 def segment(p1, p2):

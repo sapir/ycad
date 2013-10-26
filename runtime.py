@@ -13,14 +13,6 @@ import operator
 import _ycad
 
 
-def isInnerWireOfFace(wire, face):
-    # recipe from http://opencascade.wikidot.com/recipes
-    newface = TopoDS_face(face.EmptyCopied().Oriented(TopAbs_FORWARD))
-    BRep_Builder().Add(newface, wire)
-    FClass2d = BRepTopAdaptor_FClass2d(newface, Precision_PConfusion())
-    return FClass2d.PerformInfinitePoint() != TopAbs_OUT
-
-
 class ReturnException(BaseException):
     def __init__(self, value=None):
         self.value = value
@@ -480,7 +472,7 @@ class LinearExtrusion(Object3D):
         for wire in fwdFace.descendants(TopAbs_WIRE):
             wire = TopoDS_wire(wire)
 
-            if isInnerWireOfFace(wire, face):
+            if wire.isInnerWireOfFace(face):
                 innerWires.append(wire)
             else:
                 outerWires.append(wire)
