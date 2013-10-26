@@ -427,6 +427,16 @@ cdef extern from "BRepMesh_IncrementalMesh.hxx":
     cdef cppclass BRepMesh_IncrementalMesh:
         BRepMesh_IncrementalMesh(TopoDS_Shape, Standard_Real tol)
 
+cdef extern from "Bnd_Box.hxx":
+    cdef cppclass Bnd_Box:
+        Bnd_Box()
+        void Get(Standard_Real &xmin, Standard_Real &ymin, Standard_Real &zmin,
+            Standard_Real &xmax, Standard_Real &ymax, Standard_Real &zmax)
+        Standard_Real GetGap()
+
+cdef extern from "BRepBndLib.hxx":
+    void AddToBBox "BRepBndLib::Add" (TopoDS_Shape, Bnd_Box)
+
 
 cdef class Shape:
     cdef TopoDS_Shape obj
@@ -588,6 +598,17 @@ cdef class Shape:
             return classifier.State() == _TopAbs_IN
         finally:
             del explorer
+
+    def getBoundingBox(self):
+        cdef Standard_Real xmin, ymin, zmin, xmax, ymax, zmax
+
+        cdef Bnd_Box bbox
+        AddToBBox(self.obj, bbox)
+        bbox.Get(xmin, ymin, zmin, xmax, ymax, zmax)
+        cdef Standard_Real gap = bbox.GetGap()
+
+        return ((xmin + gap, ymin + gap, zmin + gap),
+            (xmax - gap, ymax - gap, zmax - gap))
 
 
 def segment2D(p1, p2):
