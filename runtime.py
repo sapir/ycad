@@ -243,6 +243,15 @@ class Object3D(object):
     def maxZ(self, ctx):
         return self.bbox[1][2]
 
+    def xSize(self, ctx):
+        return self.maxX(ctx) - self.minX(ctx)
+
+    def ySize(self, ctx):
+        return self.maxY(ctx) - self.minY(ctx)
+
+    def zSize(self, ctx):
+        return self.maxZ(ctx) - self.minZ(ctx)
+
 
 class Cube(Object3D):
     def __init__(self, ctx, s, center=False):
