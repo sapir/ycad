@@ -2,7 +2,7 @@ from libcpp cimport bool
 from cython.operator cimport dereference as deref
 
 
-ctypedef float Standard_Real
+ctypedef double Standard_Real
 ctypedef char* Standard_CString
 
 
