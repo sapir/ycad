@@ -628,6 +628,4 @@ def run(srcPath, parsedProgram, outputFilename):
             # create an empty file
             pass
     else:
-        obj._tesselate(0.05)
-
         _ycad.writeSTL(obj.shape, outputFilename, 0.05)
