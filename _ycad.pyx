@@ -1,7 +1,9 @@
 from libcpp cimport bool
 
+
 ctypedef float Standard_Real
 ctypedef char* Standard_CString
+
 
 cdef extern from "gp_Pnt.hxx":
     cdef cppclass gp_Pnt:
@@ -55,6 +57,18 @@ cdef extern from "gp_GTrsf.hxx":
         gp_GTrsf(gp_Mat, gp_XYZ)
         void SetVectorialPart(gp_Mat)
         void SetTranslationPart(gp_XYZ)
+
+cdef extern from "gp.hxx" namespace "gp":
+    gp_Pnt Origin()
+    gp_Dir DX()
+    gp_Dir DY()
+    gp_Dir DZ()
+    gp_Ax1 OX()
+    gp_Ax1 OY()
+    gp_Ax1 OZ()
+    gp_Ax2 XOY()
+    gp_Ax2 ZOX()
+    gp_Ax2 YOZ()
 
 
 cdef class Transform:
@@ -155,6 +169,14 @@ cdef extern from "BRepBuilderAPI_GTransform.hxx":
         BRepBuilderAPI_GTransform(TopoDS_Shape, gp_GTrsf, bool)
 
 
+cdef extern from "BRepPrimAPI_MakeRevol.hxx":
+    cdef cppclass BRepPrimAPI_MakeRevol(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakeRevol(TopoDS_Shape, gp_Ax1, Standard_Real D,
+            bool Copy)
+        BRepPrimAPI_MakeRevol(TopoDS_Shape, gp_Ax1, bool Copy)
+
+
+
 cdef class Shape:
     cdef TopoDS_Shape obj
 
@@ -203,6 +225,10 @@ cdef class Shape:
         return Shape().setFromMaker(BRepBuilderAPI_GTransform(
             # True = make a copy
             self.obj, gtransform.obj, True))
+
+    def revolve(Shape self, float angle):
+        return Shape().setFromMaker(BRepPrimAPI_MakeRevol(
+            self.obj, OY(), angle, True))
 
 
 def segment(p1, p2):

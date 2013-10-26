@@ -564,8 +564,7 @@ class Revolution(Object3D):
     def __init__(self, ctx, obj, angle=360):
         Object3D.__init__(self)
 
-        self.shape = BRepPrimAPI_MakeRevol(
-            obj.shape, gp_OY(), radians(angle), True).Shape()
+        self.shape = obj.shape.revolve(radians(angle))
 
 def extrude(ctx, *args, **kwargs):
     block = kwargs.pop('block')
