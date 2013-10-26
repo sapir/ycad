@@ -190,6 +190,18 @@ cdef extern from "TopAbs_Orientation.hxx":
         TopAbs_INTERNAL
         TopAbs_EXTERNAL
 
+cdef extern from "TopAbs_ShapeEnum.hxx":
+    enum TopAbs_ShapeEnum:
+        TopAbs_COMPOUND
+        TopAbs_COMPSOLID
+        TopAbs_SOLID
+        TopAbs_SHELL
+        TopAbs_FACE
+        TopAbs_WIRE
+        TopAbs_EDGE
+        TopAbs_VERTEX
+        TopAbs_SHAPE
+
 cdef extern from "TopoDS_Shape.hxx":
     cdef cppclass TopoDS_Shape:
         TopoDS_Shape Oriented(TopAbs_Orientation)
