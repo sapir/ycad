@@ -151,14 +151,14 @@ cdef class BezierSurface:
             raise ValueError("pnts parameter must be a rectangular array")
         
         cdef Geom_BezierSurface *surfptr = new Geom_BezierSurface(
-            TColgp_Array2OfPnt(0, rows - 1, 0, cols - 1))
+            TColgp_Array2OfPnt(1, rows, 1, cols))
         # this ensures deallocation
         self.handle.Set(surfptr)
 
         for i in xrange(rows):
             for j in xrange(cols):
                 x, y, z = pnts[i][j]
-                surfptr.SetPole(i, j, gp_Pnt(x, y, z))
+                surfptr.SetPole(i + 1, j + 1, gp_Pnt(x, y, z))
 
     def makeFace(self, float umin, float umax, float vmin, float vmax,
         float tolDegen=Confusion()):
