@@ -34,6 +34,11 @@ cdef extern from "gp_Ax1.hxx":
         gp_Ax1()
         gp_Ax1(gp_Pnt, gp_Dir)
 
+cdef extern from "gp_Ax2.hxx":
+    cdef cppclass gp_Ax2:
+        gp_Ax2()
+        gp_Ax2(gp_Pnt P, gp_Dir N, gp_Dir Vx)
+
 cdef extern from "gp_XYZ.hxx":
     cdef cppclass gp_XYZ:
         gp_XYZ()
