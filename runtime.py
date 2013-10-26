@@ -527,34 +527,17 @@ class LinearExtrusion(Object3D):
         segmentHeight = float(height) / numTwistSegments
         segmentTwistRad = radians(float(twist) / numTwistSegments)
 
-        auxSurf = Geom_BezierSurface(TColgp_Array2OfPnt(1, 2, 1, numTwistSegments + 1))
+        auxSurfPts = [[None] * (numTwistSegments + 1) for i in xrange(2)]
         for i in xrange(numTwistSegments + 1):
             z = segmentHeight * i
             angle = segmentTwistRad * i
-            auxSurf.SetPole(1, i + 1, gp_Pnt(0, 0, z))
-            auxSurf.SetPole(2, i + 1, gp_Pnt(cos(angle), sin(angle), z))
+            auxSurfPts[0][i] = (0, 0, z))
+            auxSurfPts[1][i] = (cos(angle), sin(angle), z)
 
-        auxSurfHandle = Handle_Geom_Surface()
-        auxSurfHandle.Set(auxSurf)
-
-        auxFace = BRepBuilderAPI_MakeFace(auxSurfHandle, 0, 1, 0, 1, Precision_Confusion()).Face()
-
-        edge = BRepBuilderAPI_MakeEdge(
-            GCE2d_MakeSegment(gp_Pnt2d(0, 0), gp_Pnt2d(0, 1)).Value(),
-            auxSurfHandle).Edge()
-        spine = BRepBuilderAPI_MakeWire(edge).Wire()
-
-        pipeShellMaker = BRepOffsetAPI_MakePipeShell(spine)
-        
-        res = pipeShellMaker.SetMode(auxFace)
-        if res != 1:
-            raise StandardError(
-                "failed setting twisted surface-normal for PipeShell")
-
-        pipeShellMaker.Add(profile)
-        pipeShellMaker.Build()
-        pipeShellMaker.MakeSolid()
-        return pipeShellMaker.Shape()
+        auxSurf = _ycad.BezierSurface(auxSurfPts)
+        auxFace = auxSurf.makeFace(0, 1, 0, 1)
+        spine = auxSurf.makeEdgeOnSurface((0, 0), (0, 1))
+        return profile.extrudeAlongSurface(spine, auxFace)
 
 class Revolution(Object3D):
     def __init__(self, ctx, obj, angle=360):
