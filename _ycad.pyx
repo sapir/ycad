@@ -175,6 +175,9 @@ cdef extern from "BRepPrimAPI_MakeRevol.hxx":
             bool Copy)
         BRepPrimAPI_MakeRevol(TopoDS_Shape, gp_Ax1, bool Copy)
 
+cdef extern from "BRepPrimAPI_MakePrism.hxx":
+    cdef cppclass BRepPrimAPI_MakePrism(BRepBuilderAPI_MakeShape):
+        BRepPrimAPI_MakePrism(TopoDS_Shape, gp_Vec, bool Copy)
 
 
 cdef class Shape:
@@ -229,6 +232,10 @@ cdef class Shape:
     def revolve(Shape self, float angle):
         return Shape().setFromMaker(BRepPrimAPI_MakeRevol(
             self.obj, OY(), angle, True))
+
+    def extrudeStraight(Shape self, float h):
+        return Shape().setFromMaker(BRepPrimAPI_MakePrism(
+            self.obj, gp_Vec(0, 0, h), True))
 
 
 def segment(p1, p2):

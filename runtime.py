@@ -480,16 +480,12 @@ class LinearExtrusion(Object3D):
         Object3D.__init__(self)
 
         if twist == 0:
-            self._makeStraight(obj.shape, h)
+            self.shape = obj.shape.extrudeStraight(h)
         else:
             self._makeTwisted(obj.shape, h, twist)
 
         if center:
             self._moveApply([0, 0, -h / 2.])
-
-    def _makeStraight(self, baseShape, height):
-        self.shape = BRepPrimAPI_MakePrism(
-            baseShape, gp_Vec(0, 0, height), True).Shape()
 
     def _makeTwisted(self, baseShape, height, twist):
         faces = [TopoDS_face(face)
