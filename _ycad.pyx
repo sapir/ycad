@@ -164,6 +164,15 @@ cdef class Shape:
         self.obj = maker.Shape()
         return self
 
+    cdef TopoDS_Edge edge(self):
+        return Edge(self.obj)
+
+    cdef TopoDS_Wire wire(self):
+        return Wire(self.obj)
+
+    cdef TopoDS_Face face(self):
+        return Face(self.obj)
+
     def __add__(Shape self, Shape b):
         return Shape().setFromMaker(BRepAlgoAPI_Fuse(self.obj, b.obj))
     
