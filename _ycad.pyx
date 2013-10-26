@@ -6,7 +6,7 @@ ctypedef char* Standard_CString
 cdef extern from "gp_Pnt.hxx":
     cdef cppclass gp_Pnt:
         gp_Pnt()
-        gp_Pnt(int, int, int)
+        gp_Pnt(Standard_Real, Standard_Real, Standard_Real)
         Standard_Real X()
         Standard_Real Y()
         Standard_Real Z()
@@ -119,6 +119,7 @@ cdef extern from "BRepBuilderAPI_MakeEdge.hxx":
 
 cdef extern from "BRepBuilderAPI_MakeWire.hxx":
     cdef cppclass BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeShape):
+        BRepBuilderAPI_MakeWire()
         BRepBuilderAPI_MakeWire(TopoDS_Edge)
         TopoDS_Wire Wire()
 
@@ -126,6 +127,7 @@ cdef extern from "BRepBuilderAPI_MakeWire.hxx":
 
 cdef extern from "BRepBuilderAPI_MakeFace.hxx":
     cdef cppclass BRepBuilderAPI_MakeFace(BRepBuilderAPI_MakeShape):
+        BRepBuilderAPI_MakeFace()
         BRepBuilderAPI_MakeFace(TopoDS_Wire)
         TopoDS_Face Face()
 
@@ -201,6 +203,31 @@ cdef class Shape:
         return Shape().setFromMaker(BRepBuilderAPI_GTransform(
             # True = make a copy
             self.obj, gtransform.obj, True))
+
+
+def segment(p1, p2):
+    cdef float x1, y1, z1
+    cdef float x2, y2, z2
+    x1, y1, z1 = p1
+    x2, y2, z2 = p2
+    return Shape().setFromMaker(BRepBuilderAPI_MakeEdge(
+        gp_Pnt(x1, y1, z1), gp_Pnt(x2, y2, z2)))
+
+def wire(edges):
+    cdef BRepBuilderAPI_MakeWire maker
+    for edgeShape in edges:
+        maker.Add((<Shape?>edgeShape).edge())
+    return Shape().setFromMaker(maker)
+
+def face(wires):
+    wireIter = iter(wires)
+    # first wire has to be passed directly to constructor,
+    # otherwise a segfault occurs for some reason
+    cdef TopoDS_Wire firstWire = (<Shape?>next(wireIter)).wire()
+    cdef BRepBuilderAPI_MakeFace maker = BRepBuilderAPI_MakeFace(firstWire)
+    for wireShape in wireIter:
+        maker.Add((<Shape?>wireShape).wire())
+    return Shape().setFromMaker(maker)
 
 
 def circle(float r):

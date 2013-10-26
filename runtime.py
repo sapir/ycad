@@ -431,34 +431,23 @@ class Polygon(Object3D):
     def __init__(self, ctx, points, paths=None):
         Object3D.__init__(self)
 
-        occPoints = [gp_Pnt(x, y, 0) for (x, y) in points]
-
         if paths is None:
-            paths = [range(len(occPoints)) + [0]]
+            paths = [range(len(points)) + [0]]
         else:
             # close loops and convert floats to ints
             paths = [map(int, p + [p[0]]) for p in paths]
 
+        def pathPoints(path):
+            return [points[pidx] for pidx in path]
+
         def makeWireFromPath(path):
-            wireMaker = BRepBuilderAPI_MakeWire()
+            return _ycad.wire(
+                _ycad.segment((x1, y1, 0), (x2, y2, 0))
+                for ((x1, y1), (x2, y2))
+                in zip(pathPoints(path), pathPoints(path[1:])))
 
-            for i, j in zip(path, path[1:]):
-                p1 = occPoints[i]
-                p2 = occPoints[j]
-                seg = GC_MakeSegment(p1, p2).Value()
-                edge = BRepBuilderAPI_MakeEdge(seg).Edge()
-                wireMaker.Add(edge)
+        self.shape = _ycad.face(makeWireFromPath(path) for path in paths)
 
-            return wireMaker.Wire()
-
-        # first wire has to be passed directly to constructor,
-        # otherwise a segfault occurs for some reason
-        faceMaker = BRepBuilderAPI_MakeFace(makeWireFromPath(paths[0]))
-        for path in paths[1:]:
-            wire = makeWireFromPath(path)
-            faceMaker.Add(wire)
-
-        self.shape = faceMaker.Shape()
 
 class Square(Polygon):
     def __init__(self, ctx, size=None, x=None, y=None, center=False):
