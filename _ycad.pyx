@@ -293,6 +293,15 @@ cdef extern from "TopoDS_Compound.hxx":
     cdef cppclass TopoDS_Compound(TopoDS_Shape):
         pass
 
+cdef extern from "TopoDS_Iterator.hxx":
+    cdef cppclass TopoDS_Iterator:
+        TopoDS_Iterator()
+        TopoDS_Iterator(TopoDS_Shape)
+        void Initialize(TopoDS_Shape)
+        bool More()
+        void Next()
+        TopoDS_Shape Value()
+
 cdef extern from "TopoDS.hxx" namespace "TopoDS":
     cdef TopoDS_Edge Edge(TopoDS_Shape)
     cdef TopoDS_Wire Wire(TopoDS_Shape)
@@ -482,6 +491,17 @@ cdef class Shape:
     @property
     def shapeType(self):
         return self.obj.ShapeType()
+
+    def children(self):
+        """
+        Iterates over direct children (contents) of this shape.
+        """
+
+        cdef TopoDS_Iterator iterator
+        iterator.Initialize(self.obj)
+        while iterator.More():
+            yield Shape().set_(iterator.Value())
+            iterator.Next()
 
     def descendants(self, TopAbs_ShapeEnum toFind,
         TopAbs_ShapeEnum toAvoid=TopAbs_SHAPE):
