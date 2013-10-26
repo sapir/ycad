@@ -13,6 +13,9 @@ import operator
 import _ycad
 
 
+OUTPUT_TOLERANCE = 0.05        # in mm
+
+
 class ReturnException(BaseException):
     def __init__(self, value=None):
         self.value = value
@@ -627,4 +630,4 @@ def run(srcPath, parsedProgram, outputFilename):
             # create an empty file
             pass
     else:
-        _ycad.writeSTL(obj.shape, outputFilename, 0.05)
+        _ycad.writeSTL(obj.shape, outputFilename, OUTPUT_TOLERANCE)
