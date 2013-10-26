@@ -136,6 +136,7 @@ class Object3D(object):
     def __init__(self, shape=None, name=None, basename='obj'):
         self.shape = shape
         self._name = _autoname(basename) if name is None else name
+        self._bbox = None
 
     def applyTransform(self, transform):
         if self.shape is None:
@@ -213,6 +214,35 @@ class Object3D(object):
 
     def _tesselate(self, tolerance):
         self.shape.tesselate(tolerance)
+
+    @property
+    def bbox(self):
+        if self._bbox is None:
+            self._tesselate(OUTPUT_TOLERANCE)
+            self._bbox = self.shape.getBoundingBox()
+
+        return self._bbox
+
+    # TODO: make these properties:
+
+    def minX(self, ctx):
+        return self.bbox[0][0]
+
+    def minY(self, ctx):
+        return self.bbox[0][1]
+
+    def minZ(self, ctx):
+        return self.bbox[0][2]
+
+    def maxX(self, ctx):
+        return self.bbox[1][0]
+
+    def maxY(self, ctx):
+        return self.bbox[1][1]
+
+    def maxZ(self, ctx):
+        return self.bbox[1][2]
+
 
 class Cube(Object3D):
     def __init__(self, ctx, s, center=False):
