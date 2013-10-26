@@ -30,13 +30,6 @@ import operator
 import _ycad
 
 
-def topoExplorerIter(*args, **kwargs):
-    """Iterates over contents of a TopoDS shape, using a TopExp_Explorer."""
-    exp = TopExp_Explorer(*args, **kwargs)
-    while exp.More():
-        yield exp.Current()
-        exp.Next()
-
 def isInnerWireOfFace(wire, face):
     # recipe from http://opencascade.wikidot.com/recipes
     newface = TopoDS_face(face.EmptyCopied().Oriented(TopAbs_FORWARD))
@@ -365,13 +358,13 @@ class Combination(Object3D):
         assert compound.ShapeType() == TopAbs_COMPOUND
 
         hasSolids = False
-        for obj in topoExplorerIter(compound, TopAbs_SOLID):
+        for obj in compound.descendants(_ycad.TopAbs_SOLID):
             hasSolids = True
             break
 
         hasExtraFaces = False
         # look for faces that aren't in solids
-        for obj in topoExplorerIter(compound, TopAbs_FACE, TopAbs_SOLID):
+        for obj in compound.descendants(_ycad.TopAbs_FACE, _ycad.TopAbs_SOLID):
             hasExtraFaces = True
             break
 
@@ -396,7 +389,7 @@ class Combination(Object3D):
         compSolid = TopoDS_CompSolid()
         builder.MakeCompSolid(compSolid)
 
-        for solid in topoExplorerIter(compound, TopAbs_SOLID):
+        for solid in compound.descendants(_ycad.TopAbs_SOLID):
             builder.Add(compSolid, TopoDS_solid(solid))
 
         return Combination.compSolidToSolid(compSolid)
@@ -488,8 +481,7 @@ class LinearExtrusion(Object3D):
             self._moveApply([0, 0, -h / 2.])
 
     def _makeTwisted(self, baseShape, height, twist):
-        faces = [TopoDS_face(face)
-            for face in topoExplorerIter(baseShape, TopAbs_FACE)]
+        faces = baseShape.descendants(_ycad.TopAbs_FACE)
 
         self.shape = textimpl.makeCompound(
             self._twistFace(face, height, twist)
@@ -501,7 +493,8 @@ class LinearExtrusion(Object3D):
         # outer wire and possibly one or more inner wires.
         outerWires = []
         innerWires = []
-        for wire in topoExplorerIter(face.Oriented(TopAbs_FORWARD), TopAbs_WIRE):
+        fwdFace = face.oriented(_ycad.TopAbs_FORWARD)
+        for wire in fwdFace.descendants(TopAbs_WIRE):
             wire = TopoDS_wire(wire)
 
             if isInnerWireOfFace(wire, face):
