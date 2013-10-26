@@ -647,6 +647,16 @@ def compSolidToSolid(Shape compSolidShape):
     return Shape().setFromMaker(BRepBuilderAPI_MakeSolid(
         compSolidShape.compSolid()))
 
+def solidsToCompSolid(solids):
+    cdef BRep_Builder builder
+    cdef TopoDS_CompSolid compSolid
+
+    builder.MakeCompSolid(compSolid)
+    for solidShape in solids:
+        builder.Add(compSolid, (<Shape?>solidShape).obj)
+
+    return Shape().set_(compSolid)
+
 def compound(shapes):
     cdef BRep_Builder builder
     cdef TopoDS_Compound compound
