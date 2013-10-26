@@ -209,8 +209,7 @@ class Object3D(object):
         return Revolution(ctx, self, *args, **kwargs)
 
     def _tesselate(self, tolerance):
-        pass
-        # BRepMesh_IncrementalMesh(self.shape, tolerance)
+        self.shape.tesselate(tolerance)
 
 class Cube(Object3D):
     def __init__(self, ctx, s, center=False):

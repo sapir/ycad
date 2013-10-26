@@ -370,6 +370,10 @@ cdef extern from "BRepTopAdaptor_FClass2d.hxx":
         TopAbs_State PerformInfinitePoint()
         TopAbs_State Perform(gp_Pnt2d, bool)
 
+cdef extern from "BRepMesh_IncrementalMesh.hxx":
+    cdef cppclass BRepMesh_IncrementalMesh:
+        BRepMesh_IncrementalMesh(TopoDS_Shape, Standard_Real tol)
+
 
 cdef class Shape:
     cdef TopoDS_Shape obj
@@ -500,6 +504,9 @@ cdef class Shape:
         BRep_Builder().Add(newface.obj, self.obj)
         return (BRepTopAdaptor_FClass2d(newface.face(), PConfusion())
             .PerformInfinitePoint() != TopAbs_OUT)
+
+    def tesselate(self, tolerance):
+        BRepMesh_IncrementalMesh(self.obj, tolerance)
 
 
 def segment(p1, p2):
