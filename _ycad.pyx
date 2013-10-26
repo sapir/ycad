@@ -116,10 +116,14 @@ cdef extern from "BRepBuilderAPI_MakeWire.hxx":
         BRepBuilderAPI_MakeWire(TopoDS_Edge)
         TopoDS_Wire Wire()
 
+        void Add(TopoDS_Edge)
+
 cdef extern from "BRepBuilderAPI_MakeFace.hxx":
     cdef cppclass BRepBuilderAPI_MakeFace(BRepBuilderAPI_MakeShape):
         BRepBuilderAPI_MakeFace(TopoDS_Wire)
         TopoDS_Face Face()
+
+        void Add(TopoDS_Wire)
 
 
 cdef extern from "BRepAlgoAPI_Fuse.hxx":
