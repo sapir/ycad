@@ -233,6 +233,7 @@ TopAbs_UNKNOWN = _TopAbs_UNKNOWN
 
 cdef extern from "TopoDS_Shape.hxx":
     cdef cppclass TopoDS_Shape:
+        TopAbs_ShapeEnum ShapeType()
         TopoDS_Shape Oriented(TopAbs_Orientation)
         TopoDS_Shape EmptyCopied()
 
@@ -305,6 +306,11 @@ cdef extern from "BRepBuilderAPI_MakeEdge.hxx":
         BRepBuilderAPI_MakeEdge(Handle_Geom2d_Curve, Handle_Geom_Surface)
         TopoDS_Edge Edge()
 
+cdef extern from "BRepBuilderAPI_MakeEdge2d.hxx":
+    cdef cppclass BRepBuilderAPI_MakeEdge2d(BRepBuilderAPI_MakeShape):
+        BRepBuilderAPI_MakeEdge(gp_Pnt2d, gp_Pnt2d)
+        TopoDS_Edge Edge()
+
 cdef extern from "BRepBuilderAPI_MakeWire.hxx":
     cdef cppclass BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeShape):
         BRepBuilderAPI_MakeWire()
@@ -368,6 +374,20 @@ cdef extern from "BRepOffsetAPI_MakePipeShell.hxx":
         bool MakeSolid()
 
 
+cdef extern from "BRepClass_FaceExplorer.hxx":
+    cdef cppclass BRepClass_FaceExplorer:
+        BRepClass_FaceExplorer(TopoDS_Face)
+
+cdef extern from "BRepClass_FClassifier.hxx":
+    cdef cppclass BRepClass_FClassifier:
+        BRepClass_FClassifier()
+        BRepClass_FClassifier(BRepClass_FaceExplorer&, gp_Pnt2d,
+            Standard_Real tol)
+        void Perform(BRepClass_FaceExplorer&, gp_Pnt2d,
+            Standard_Real tol)
+
+        TopAbs_State State()
+
 cdef extern from "BRepTopAdaptor_FClass2d.hxx":
     cdef cppclass BRepTopAdaptor_FClass2d:
         BRepTopAdaptor_FClass2d(TopoDS_Face, Standard_Real tol)
@@ -419,6 +439,10 @@ cdef class Shape:
 
     def __mul__(Shape self, Shape b):
         return Shape().setFromMaker(BRepAlgoAPI_Common(self.obj, b.obj))
+
+    @property
+    def shapeType(self):
+        return self.obj.ShapeType()
 
     def descendants(self, TopAbs_ShapeEnum toFind,
         TopAbs_ShapeEnum toAvoid=TopAbs_SHAPE):
@@ -512,6 +536,38 @@ cdef class Shape:
     def tesselate(self, tolerance):
         BRepMesh_IncrementalMesh(self.obj, tolerance)
 
+    def contains2DPoint(self, point):
+        """
+        Test if a 2D wire or face contains a 2D point.
+        """
+
+        cdef float x, y
+        x, y = point
+
+        cdef TopoDS_Face face
+        if self.obj.ShapeType() == _TopAbs_FACE:
+            face = self.face()
+        elif self.obj.ShapeType() == _TopAbs_WIRE:
+            face = BRepBuilderAPI_MakeFace(self.wire()).Face()
+        else:
+            raise ValueError("Supported only for faces and wires.")
+
+        cdef BRepClass_FClassifier classifier
+        cdef BRepClass_FaceExplorer *explorer = new BRepClass_FaceExplorer(face)
+        try:
+            classifier.Perform(deref(explorer), gp_Pnt2d(x, y), Confusion())
+            return classifier.State() == _TopAbs_IN
+        finally:
+            del explorer
+
+
+def segment2D(p1, p2):
+    cdef float x1, y1
+    cdef float x2, y2
+    x1, y1 = p1
+    x2, y2 = p2
+    return Shape().setFromMaker(BRepBuilderAPI_MakeEdge2d(
+        gp_Pnt2d(x1, y1), gp_Pnt2d(x2, y2)))
 
 def segment(p1, p2):
     cdef float x1, y1, z1

@@ -8,7 +8,7 @@ from math import *
 import copy
 import os
 import numpy as np
-# import textimpl
+import textimpl
 import operator
 import _ycad
 
@@ -51,7 +51,7 @@ class Context:
 
         self.modules = {}
 
-        # self.textShapeMaker = textimpl.TextShapeMaker()
+        self.textShapeMaker = textimpl.TextShapeMaker()
 
     def execProgram(self, srcPath, parsedProgram, moduleObjName):
         try:

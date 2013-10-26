@@ -2,16 +2,7 @@
 
 import cairo
 import networkx
-from OCC.gp import *
-from OCC.TColgp import *
-from OCC.BRepBuilderAPI import *
-from OCC.GC import *
-from OCC.Geom2d import *
-from OCC.TopAbs import *
-from OCC.TopoDS import *
-from OCC.BRepClass import *
-from OCC.Precision import Precision_Confusion
-
+import _ycad
 
 
 def make2DLine(p1, p2):
@@ -91,24 +82,6 @@ def cairoPathToOccWiresAndPts(path):
     assert instrType == cairo.PATH_CLOSE_PATH, \
         "Last path instruction should be a PATH_CLOSE_PATH!"
 
-def isPointIn2DFace(point, face):
-    classifier = BRepClass_FClassifier(BRepClass_FaceExplorer(face),
-        gp_Pnt2d(*point), Precision_Confusion())
-
-    return classifier.State() == TopAbs_IN
-
-def isPointIn2DWire(point, wire):
-    face = BRepBuilderAPI_MakeFace(wire).Face()
-    return isPointIn2DFace(point, face)
-
-def makeFaceFromWires(wires):
-    wireIter = iter(wires)
-    faceMaker = BRepBuilderAPI_MakeFace(next(wireIter))
-    for wire in wireIter:
-        faceMaker.Add(wire)
-
-    return faceMaker.Face()
-
 def groupNonIntersectingWiresIntoFaces(wiresAndPts):
     # build directed graph of wires A->B where contains B
     containmentGraph = networkx.DiGraph()
@@ -120,7 +93,7 @@ def groupNonIntersectingWiresIntoFaces(wiresAndPts):
         (aWire, bWire)
         for (aWire, _) in wiresAndPts
         for (bWire, bPt) in wiresAndPts
-        if aWire is not bWire and isPointIn2DWire(bPt, aWire))
+        if aWire is not bWire and aWire.contains2DPoint(bPt))
 
     faces = []
     while True:
@@ -137,30 +110,16 @@ def groupNonIntersectingWiresIntoFaces(wiresAndPts):
         # all of those, so that in the next iteration, any inner inner loops
         # can become root wires.
         for rootWire in rootWires:
-            faceMaker = BRepBuilderAPI_MakeFace(rootWire)
-            for childWire in containmentGraph.successors(rootWire):
-                faceMaker.Add(TopoDS_wire(childWire.Reversed()))
-                containmentGraph.remove_node(childWire)
-
-            containmentGraph.remove_node(rootWire)
-            faces.append(faceMaker.Face())
+            wires = [rootWire] + containmentGraph.successors(rootWire)
+            containmentGraph.remove_nodes(wires)
+            faces.append(_ycad.face(wires))
 
     return faces
-
-def makeCompound(parts):
-    builder = TopoDS_Builder()
-    compound = TopoDS_Compound()
-    builder.MakeCompound(compound)
-
-    for part in parts:
-        builder.Add(compound, part)
-
-    return compound
 
 def cairoPathToOccShape(path):
     wiresAndPts = list(cairoPathToOccWiresAndPts(path))
     faces = groupNonIntersectingWiresIntoFaces(wiresAndPts)
-    return makeCompound(faces)
+    return _ycad.compound(faces)
 
 
 
