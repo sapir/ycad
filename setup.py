@@ -11,6 +11,6 @@ setup(
             language="c++",
             include_dirs=['/usr/local/include/oce'],
             libraries=['TK{0}'.format(lib)
-                for lib in 'G3d BRep Prim BO STL'.split()]
+                for lib in 'G3d BRep Prim Offset BO STL'.split()]
         ),
     ]))
