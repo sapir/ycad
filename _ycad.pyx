@@ -80,6 +80,7 @@ cdef class GenTransform:
 
 cdef extern from "gp_Circ.hxx":
     cdef cppclass gp_Circ:
+        gp_Circ()
         gp_Circ(gp_Ax2, Standard_Real)
 
 
@@ -181,6 +182,14 @@ cdef class Shape:
         return Shape().setFromMaker(BRepBuilderAPI_GTransform(
             # True = make a copy
             self.obj, gtransform.obj, True))
+
+
+def circle(float r):
+    cdef gp_Circ circ = gp_Circ(gp_Ax2(), r)
+    cdef TopoDS_Edge edge = BRepBuilderAPI_MakeEdge(circ).Edge()
+    cdef TopoDS_Wire wire = BRepBuilderAPI_MakeWire(edge).Wire()
+    cdef TopoDS_Face face = BRepBuilderAPI_MakeFace(wire).Face()
+    return Shape().set_(face)
 
 
 cdef extern from "BRepPrimAPI_MakeBox.hxx":

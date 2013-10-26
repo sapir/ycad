@@ -425,10 +425,7 @@ class Circle(Object3D):
         if d is not None:
             r = d / 2.
 
-        circ = GC_MakeCircle(gp_Ax2(), r).Value()
-        edge = BRepBuilderAPI_MakeEdge(circ).Edge()
-        wire = BRepBuilderAPI_MakeWire(edge).Wire()
-        self.shape = BRepBuilderAPI_MakeFace(wire).Shape()
+        self.shape = _ycad.circle(r)
 
 class Polygon(Object3D):
     def __init__(self, ctx, points, paths=None):
