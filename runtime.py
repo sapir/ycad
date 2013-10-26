@@ -61,7 +61,7 @@ class Context:
         try:
             self.pushScope()
             self.setVar('__path',
-                [DEFAULT_INCLUDE_DIR, os.path.dirname(srcPath)])
+                [os.path.dirname(srcPath), DEFAULT_INCLUDE_DIR])
 
             output = Combination.fromBlock(self, 'add',
                 block=Block(parsedProgram), name=moduleObjName)
