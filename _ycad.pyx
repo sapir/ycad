@@ -183,9 +183,16 @@ cdef class BezierSurface:
             self.handle))
 
 
+cdef extern from "TopAbs_Orientation.hxx":
+    enum TopAbs_Orientation:
+        TopAbs_FORWARD
+        TopAbs_REVERSED
+        TopAbs_INTERNAL
+        TopAbs_EXTERNAL
+
 cdef extern from "TopoDS_Shape.hxx":
     cdef cppclass TopoDS_Shape:
-        pass
+        TopoDS_Shape Oriented(TopAbs_Orientation)
 
 cdef extern from "TopoDS_Edge.hxx":
     cdef cppclass TopoDS_Edge(TopoDS_Shape):
@@ -363,6 +370,9 @@ cdef class Shape:
         finally:
             # TODO: ensure that relevant C++ exceptions are caught, too
             del maker
+
+    def oriented(self, TopAbs_Orientation orient):
+        return Shape().set_(self.obj.Oriented(orient))
 
 
 def segment(p1, p2):
