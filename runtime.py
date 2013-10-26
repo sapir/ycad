@@ -8,23 +8,6 @@ from math import *
 import copy
 import os
 import numpy as np
-# from OCC.gp import *
-# from OCC.BRep import BRep_Builder
-# from OCC.BRepMesh import *
-# from OCC.BRepBuilderAPI import *
-# from OCC.BRepPrimAPI import *
-# from OCC.BRepAlgoAPI import *
-# from OCC.BRepOffsetAPI import *
-# from OCC.BRepTopAdaptor import BRepTopAdaptor_FClass2d
-# from OCC.StlAPI import StlAPI_Reader, StlAPI_Writer
-# from OCC.GC import *
-# from OCC.GCE2d import *
-# from OCC.Geom import *
-# from OCC.TColgp import *
-# from OCC.TopAbs import *
-# from OCC.TopExp import *
-# from OCC.TopoDS import *
-# from OCC.Precision import Precision_Confusion, Precision_PConfusion
 # import textimpl
 import operator
 import _ycad
