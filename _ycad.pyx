@@ -5,6 +5,11 @@ ctypedef float Standard_Real
 ctypedef char* Standard_CString
 
 
+cdef extern from "gp_Pnt2d.hxx":
+    cdef cppclass gp_Pnt2d:
+        gp_Pnt2d()
+        gp_Pnt2d(Standard_Real, Standard_Real)
+
 cdef extern from "gp_Pnt.hxx":
     cdef cppclass gp_Pnt:
         gp_Pnt()
@@ -101,6 +106,15 @@ cdef extern from "gp_Circ.hxx":
         gp_Circ()
         gp_Circ(gp_Ax2, Standard_Real)
 
+cdef extern from "Handle_Geom2d_Curve.hxx":
+    cdef cppclass Handle_Geom2d_Curve:
+        pass
+
+cdef extern from "Handle_Geom2d_TrimmedCurve.hxx":
+    # actually inherits from BoundedCurve
+    cdef cppclass Handle_Geom2d_TrimmedCurve(Handle_Geom2d_Curve):
+        pass
+
 cdef extern from "Geom_Surface.hxx":
     cdef cppclass Geom_Surface:
         pass
@@ -115,8 +129,13 @@ cdef extern from "Handle_Geom_Surface.hxx":
         Handle_Geom_Surface()
         void Set "operator=" (Geom_Surface*)
 
+cdef extern from "GCE2d_MakeSegment.hxx":
+    cdef cppclass GCE2d_MakeSegment:
+        GCE2d_MakeSegment(gp_Pnt2d, gp_Pnt2d)
+        Handle_Geom2d_TrimmedCurve Value()
+
 cdef class BezierSurface:
-    cdef Geom_BezierSurface *thisptr
+    cdef Handle_Geom_Surface handle
 
     def __cinit__(self, pnts):
         cdef int rows = len(pnts)
@@ -126,24 +145,38 @@ cdef class BezierSurface:
         if not all(len(row) == cols for row in pnts):
             raise ValueError("pnts parameter must be a rectangular array")
         
-        self.thisptr = new Geom_BezierSurface(
+        cdef Geom_BezierSurface *surfptr = new Geom_BezierSurface(
             TColgp_Array2OfPnt(0, rows - 1, 0, cols - 1))
+        # this ensures deallocation
+        self.handle.Set(surfptr)
+
         for i in xrange(rows):
             for j in xrange(cols):
                 x, y, z = pnts[i][j]
-                self.thisptr.SetPole(i, j, gp_Pnt(x, y, z))
-
-    def __dealloc__(self):
-        del self.thisptr
+                surfptr.SetPole(i, j, gp_Pnt(x, y, z))
 
     def makeFace(self, float umin, float umax, float vmin, float vmax,
         float tolDegen):
 
-        cdef Handle_Geom_Surface handle
-        handle.Set(self.thisptr)
-
         return Shape().setFromMaker(BRepBuilderAPI_MakeFace(
-            handle, umin, umax, vmin, vmax, tolDegen))
+            self.handle, umin, umax, vmin, vmax, tolDegen))
+
+    def makeEdgeOnSurface(self, p1, p2):
+        """
+        Make an edge lying on the surface.
+
+        p1 and p2 are 2D points in parametric space.
+        """
+
+        cdef float u1, v1
+        cdef float u2, v2
+
+        u1, v1 = p1
+        u2, v2 = p2
+
+        return Shape().setFromMaker(BRepBuilderAPI_MakeEdge(
+            GCE2d_MakeSegment(gp_Pnt2d(u1, v1), gp_Pnt2d(u2, v2)).Value(),
+            self.handle))
 
 
 cdef extern from "TopoDS_Shape.hxx":
@@ -176,6 +209,7 @@ cdef extern from "BRepBuilderAPI_MakeEdge.hxx":
     cdef cppclass BRepBuilderAPI_MakeEdge(BRepBuilderAPI_MakeShape):
         BRepBuilderAPI_MakeEdge(gp_Pnt, gp_Pnt)
         BRepBuilderAPI_MakeEdge(gp_Circ)
+        BRepBuilderAPI_MakeEdge(Handle_Geom2d_Curve, Handle_Geom_Surface)
         TopoDS_Edge Edge()
 
 cdef extern from "BRepBuilderAPI_MakeWire.hxx":
