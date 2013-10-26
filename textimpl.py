@@ -68,6 +68,8 @@ def groupNonIntersectingWiresIntoFaces(wiresAndPts):
     # add all wires, even those not participating in edges
     containmentGraph.add_nodes_from(wire for (wire, _) in wiresAndPts)
 
+    # TODO: this probably doesn't work correctly for A inside B inside C
+
     containmentGraph.add_edges_from(
         (aWire, bWire)
         for (aWire, _) in wiresAndPts
@@ -89,9 +91,15 @@ def groupNonIntersectingWiresIntoFaces(wiresAndPts):
         # all of those, so that in the next iteration, any inner inner loops
         # can become root wires.
         for rootWire in rootWires:
-            wires = [rootWire] + containmentGraph.successors(rootWire)
-            containmentGraph.remove_nodes_from(wires)
-            faces.append(_ycad.face(wires))
+            wiresInsideRoot = containmentGraph.successors(rootWire)
+
+            orientedWires = ([rootWire.oriented(_ycad.TopAbs_FORWARD)]
+                + [w.oriented(_ycad.TopAbs_REVERSED) for w in wiresInsideRoot])
+            faces.append(_ycad.face(orientedWires))
+
+            # done with these
+            containmentGraph.remove_node(rootWire)
+            containmentGraph.remove_nodes_from(wiresInsideRoot)
 
     return faces
 
