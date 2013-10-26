@@ -58,6 +58,10 @@ cdef extern from "gp_GTrsf.hxx":
         void SetVectorialPart(gp_Mat)
         void SetTranslationPart(gp_XYZ)
 
+cdef extern from "TColgp_Array2OfPnt.hxx":
+    cdef cppclass TColgp_Array2OfPnt:
+        TColgp_Array2OfPnt(int, int, int, int)
+
 cdef extern from "gp.hxx" namespace "gp":
     gp_Pnt Origin()
     gp_Dir DX()
@@ -97,6 +101,49 @@ cdef extern from "gp_Circ.hxx":
         gp_Circ()
         gp_Circ(gp_Ax2, Standard_Real)
 
+cdef extern from "Geom_Surface.hxx":
+    cdef cppclass Geom_Surface:
+        pass
+
+cdef extern from "Geom_BezierSurface.hxx":
+    cdef cppclass Geom_BezierSurface(Geom_Surface):
+        Geom_BezierSurface(TColgp_Array2OfPnt)
+        void SetPole(int, int, gp_Pnt)
+
+cdef extern from "Handle_Geom_Surface.hxx":
+    cdef cppclass Handle_Geom_Surface:
+        Handle_Geom_Surface()
+        void Set "operator=" (Geom_Surface*)
+
+cdef class BezierSurface:
+    cdef Geom_BezierSurface *thisptr
+
+    def __cinit__(self, pnts):
+        cdef int rows = len(pnts)
+        cdef int cols = len(pnts[0])
+        cdef float x, y, z
+        
+        if not all(len(row) == cols for row in pnts):
+            raise ValueError("pnts parameter must be a rectangular array")
+        
+        self.thisptr = new Geom_BezierSurface(
+            TColgp_Array2OfPnt(0, rows - 1, 0, cols - 1))
+        for i in xrange(rows):
+            for j in xrange(cols):
+                x, y, z = pnts[i][j]
+                self.thisptr.SetPole(i, j, gp_Pnt(x, y, z))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def makeFace(self, float umin, float umax, float vmin, float vmax,
+        float tolDegen):
+
+        cdef Handle_Geom_Surface handle
+        handle.Set(self.thisptr)
+
+        return Shape().setFromMaker(BRepBuilderAPI_MakeFace(
+            handle, umin, umax, vmin, vmax, tolDegen))
 
 
 cdef extern from "TopoDS_Shape.hxx":
@@ -143,6 +190,8 @@ cdef extern from "BRepBuilderAPI_MakeFace.hxx":
     cdef cppclass BRepBuilderAPI_MakeFace(BRepBuilderAPI_MakeShape):
         BRepBuilderAPI_MakeFace()
         BRepBuilderAPI_MakeFace(TopoDS_Wire)
+        BRepBuilderAPI_MakeFace(Handle_Geom_Surface, Standard_Real, Standard_Real,
+            Standard_Real, Standard_Real, Standard_Real)
         TopoDS_Face Face()
 
         void Add(TopoDS_Wire)
