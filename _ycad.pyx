@@ -78,14 +78,47 @@ cdef class GenTransform:
             0, 0, sz))
 
 
+cdef extern from "gp_Circ.hxx":
+    cdef cppclass gp_Circ:
+        gp_Circ(gp_Ax2, Standard_Real)
+
+
+
 cdef extern from "TopoDS_Shape.hxx":
     cdef cppclass TopoDS_Shape:
+        pass
+
+cdef extern from "TopoDS_Edge.hxx":
+    cdef cppclass TopoDS_Edge(TopoDS_Shape):
+        pass
+
+cdef extern from "TopoDS_Wire.hxx":
+    cdef cppclass TopoDS_Wire(TopoDS_Shape):
+        pass
+
+cdef extern from "TopoDS_Face.hxx":
+    cdef cppclass TopoDS_Face(TopoDS_Shape):
         pass
 
 cdef extern from "BRepBuilderAPI_MakeShape.hxx":
     cdef cppclass BRepBuilderAPI_MakeShape:
         const TopoDS_Shape &Shape()
 
+cdef extern from "BRepBuilderAPI_MakeEdge.hxx":
+    cdef cppclass BRepBuilderAPI_MakeEdge(BRepBuilderAPI_MakeShape):
+        BRepBuilderAPI_MakeEdge(gp_Pnt, gp_Pnt)
+        BRepBuilderAPI_MakeEdge(gp_Circ)
+        TopoDS_Edge Edge()
+
+cdef extern from "BRepBuilderAPI_MakeWire.hxx":
+    cdef cppclass BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeShape):
+        BRepBuilderAPI_MakeWire(TopoDS_Edge)
+        TopoDS_Wire Wire()
+
+cdef extern from "BRepBuilderAPI_MakeFace.hxx":
+    cdef cppclass BRepBuilderAPI_MakeFace(BRepBuilderAPI_MakeShape):
+        BRepBuilderAPI_MakeFace(TopoDS_Wire)
+        TopoDS_Face Face()
 
 
 cdef extern from "BRepPrimAPI_MakeBox.hxx":
