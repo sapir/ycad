@@ -42,7 +42,7 @@ number.setParseAction(lambda s,loc,toks: [ float(toks[0]) ])
 numberWithUnit = (number + Optional(unit)).setName("number with optional unit")
 numberWithUnit.setParseAction(lambda s,loc,toks: toks[0] if len(toks) == 1 else [toks[0]*toks[1]])
 
-vectorLiteral = surround("[]", delimitedList(literal)).setName("vector literal")
+vectorLiteral = surround("[]", Optional(delimitedList(literal))).setName("vector literal")
 vectorLiteral.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
 boolLiteral = oneOfKeywords('true false').setName("boolean literal")
@@ -69,7 +69,7 @@ varName.setParseAction(lambda s,loc,toks: VarNameExpr(toks[0]))
 
 # TODO: attrAccess = varName + OneOrMore("." + varName)
 
-vector = surround("[]", delimitedList(expr), commit=True).setName("vector expression")
+vector = surround("[]", Optional(delimitedList(expr)), commit=True).setName("vector expression")
 vector.setParseAction(lambda s,loc,toks: VectorExpr(toks.asList()))
 
 unaryOpParseAction = lambda s,loc,toks: UnaryOpExpr(toks[0][0], toks[0][1])
