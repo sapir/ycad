@@ -36,27 +36,32 @@ func gearProfile(D, m=4, pressureAngle=20) {
     # tooth thickness at tooth tip (TODO: is this correct?)
     t_tip = t - a * sin(pressureAngle)
 
-    # y coord of bottom of tooth polygon. a bit lower than dedendum so that
-    # tooth bottom completely overlaps the inner circle.
-    t_bot = -b - 0.1 * D_r
+    r_center = D / 2
+    r_root = r_center - b
+    r_tip = r_center + a
+    
+    half_t_root_angle = atan(t / 2 / r_root)    # half of thickness at root in degrees
+    half_t_angle = atan(t / 2 / r_center)       # half of thickness at center in degrees
+    half_t_tip_angle = atan(t_tip / 2 / r_tip)  # half of thickness at tip in degrees
 
-    tooth = polygon(
-        [
-            [t/2, t_bot],
-            [t/2, 0],
-            [t_tip/2, a],
-            [-t_tip/2, a],
-            [-t/2, 0],
-            [-t/2, t_bot]
-        ])
-
-    for i in (range(N)) {
-        tooth
-            .move(y=D/2)
-            .rotate(z=(360/N) * i)
+    func polarPt(r, a) {
+        return [r*cos(a), r*sin(a)]
     }
 
-    circle(d=D_r)
+    points = []
+    for i in (range(N)) {
+        angle = 360/N * i
+        points = points + [
+                polarPt(r_root, angle - half_t_root_angle),
+                polarPt(r_center, angle - half_t_angle),
+                polarPt(r_tip, angle - half_t_tip_angle),
+                polarPt(r_tip, angle + half_t_tip_angle),
+                polarPt(r_center, angle + half_t_angle),
+                polarPt(r_root, angle + half_t_root_angle)
+            ]
+    }
+
+    polygon(points)
 }
 
 # TODO: add center distance calculation
