@@ -70,3 +70,21 @@ func spurGear(D, m=4, h, pressureAngle=20) {
     gearProfile(D=D, m=m, pressureAngle=pressureAngle)
         .extrude(h=h)
 }
+
+func helicalGear(D, m=4, h, helixAngle=60, pressureAngle=20) {
+    # tan(helixAngle) = twistLength / (h/2)
+    twistLength = tan(helixAngle) * (h/2)
+    pitchCircumference = pi * D
+    twist = twistLength * (360 / pitchCircumference)
+
+    gearProfile(D=D, m=m, pressureAngle=pressureAngle)
+        .extrude(h=h/2, twist=twist)
+}
+
+func herringboneGear(D, m=4, h, helixAngle=60, pressureAngle=20) {
+    half = helicalGear(D=D, m=m, h=h, helixAngle=helixAngle,
+        pressureAngle=pressureAngle)
+
+    half
+    half.scale(z=-1).move(z=h)
+}
