@@ -1,0 +1,67 @@
+# calculations based on:
+# * http://makezine.com/2010/06/28/make-your-own-gears/
+#   based in turn on http://www.bostongear.com/pdf/gear_theory.pdf
+#   (can be found in Wayback Machine)
+# * http://en.wikipedia.org/wiki/Gear
+# * http://www.metrication.com/engineering/gears.html
+
+
+# it seems 20 deg angle is better for torque, but
+# 14.5 deg angle is better for backlash.
+# D is pitch diameter - effective diameter of gear
+#   (not the same as outer diameter)
+# m is module - ratio of pitch diameter to number of teeth (basically the
+#   arc length of the tooth spacing)
+func gearProfile(D, m=4, pressureAngle=20) {
+    if D % m != 0 { print("WARNING: non-integer number of teeth") }
+
+    N = D / m           # number of teeth
+    P = 1 / m           # diametrical pitch
+    p = pi / P          # circular pitch
+
+    a = 1 / P           # addendum
+    D_o = D + 2 * a     # outer diameter
+
+    # whole depth
+    if P >= 20 {        # is this what 20P means?
+        h_t = 2.2 / P + 0.002
+    } else {
+        h_t = 2.157 / P
+    }
+
+    b = h_t - a         # dedendum
+    D_r = D - 2 * b     # root diameter
+    t = pi / 2 / P      # tooth thickness (at pitch dia)
+
+    # tooth thickness at tooth tip (TODO: is this correct?)
+    t_tip = t - a * sin(pressureAngle)
+
+    # y coord of bottom of tooth polygon. a bit lower than dedendum so that
+    # tooth bottom completely overlaps the inner circle.
+    t_bot = -b - 0.1 * D_r
+
+    tooth = polygon(
+        [
+            [t/2, t_bot],
+            [t/2, 0],
+            [t_tip/2, a],
+            [-t_tip/2, a],
+            [-t/2, 0],
+            [-t/2, t_bot]
+        ])
+
+    for i in (range(N)) {
+        tooth
+            .move(y=D/2)
+            .rotate(z=(360/N) * i)
+    }
+
+    circle(d=D_r)
+}
+
+# TODO: add center distance calculation
+
+func spurGear(D, m=4, h, pressureAngle=20) {
+    gearProfile(D=D, m=m, pressureAngle=pressureAngle)
+        .extrude(h=h)
+}
