@@ -531,7 +531,8 @@ class LinearExtrusion(Object3D):
         auxSurf = _ycad.BezierSurface(auxSurfPts)
         auxFace = auxSurf.makeFace(0, 1, 0, 1)
         spine = auxSurf.makeEdgeOnSurface((0, 0), (0, 1))
-        return profile.extrudeAlongSurface(spine, auxFace)
+        return profile.extrudeAlongSurface(spine, auxFace,
+            tolerance=OUTPUT_TOLERANCE)
 
 class Revolution(Object3D):
     def __init__(self, ctx, obj, angle=360):

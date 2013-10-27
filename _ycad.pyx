@@ -408,6 +408,10 @@ cdef extern from "BRepOffsetAPI_MakePipeShell.hxx":
         BRepOffsetAPI_MakePipeShell(TopoDS_Wire Spine)
         bool SetMode(TopoDS_Shape SpineSupport)
         void Add(TopoDS_Shape Profile)
+        void SetTolerance(Standard_Real Tol3d)
+        void SetTolerance(Standard_Real Tol3d, Standard_Real BoundTol)
+        void SetTolerance(Standard_Real Tol3d, Standard_Real BoundTol,
+            Standard_Real TolAngular)
         void Build()
         bool MakeSolid()
 
@@ -548,7 +552,7 @@ cdef class Shape:
             self.obj, gp_Vec(0, 0, h), True))
 
     def extrudeAlongSurface(Shape self, Shape spine, Shape normalSurf,
-        bool cap=True):
+        float tolerance, bool cap=True):
 
         """
         Extrude along spine, using the corresponding normal at points on
@@ -572,6 +576,9 @@ cdef class Shape:
                     "failed setting twisted surface-normal for PipeShell")
 
             maker.Add(self.obj)
+
+            maker.SetTolerance(tolerance, tolerance)
+
             maker.Build()
             maker.MakeSolid()
             return Shape().setFromMaker(deref(maker))
