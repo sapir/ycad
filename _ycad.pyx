@@ -620,6 +620,8 @@ cdef class Shape:
             del explorer
 
     def getBoundingBox(self):
+        # TODO: this doesn't take into account the object's position,
+            # and possibly not the orientation, either
         cdef Standard_Real xmin, ymin, zmin, xmax, ymax, zmax
 
         cdef Bnd_Box bbox
