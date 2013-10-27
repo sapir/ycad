@@ -23,10 +23,10 @@ func gearProfile(D, m=4, pressureAngle=20) {
     D_o = D + 2 * a     # outer diameter
 
     # whole depth
-    if P >= 20 {        # is this what 20P means?
-        h_t = 2.2 / P + 0.002
+    if m < 1.25 {
+        h_t = 2.4 * m
     } else {
-        h_t = 2.157 / P
+        h_t = 2.25 * m
     }
 
     b = h_t - a         # dedendum
