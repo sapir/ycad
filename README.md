@@ -3,6 +3,9 @@ ycad
 
 An object-oriented solid CAD programming language
 
+*This repository is no longer under active development.
+Please use [rcad](https://github.com/sapir/rcad) instead.*
+
 The syntax is inspired by OpenSCAD, Python, Lua, and probably
 some other languages, but is intended to be cleaner than OpenSCAD.
 
